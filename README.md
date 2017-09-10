@@ -1,9 +1,4 @@
 # Augmented Reality & Virtual Reality
 
-Author:   Jimmy Gouraud
+Course : http://www.labri.fr/perso/pbenard/teaching/rvra/
 
-Teacher:  BENARD Pierre  
-          GUENNEBAUD Gael  
-          PACANOWSKI Romain  
-
-Year: 2017-2018
