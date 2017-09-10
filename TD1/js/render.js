@@ -1,7 +1,7 @@
 var container, stats;
 var scene, camera, renderer;
-var cube;
 var controls, clock;
+var mat1, mat2, mat3, mat4, mat5;
 
 function init()
 {
@@ -29,15 +29,15 @@ function init()
     // Load textures
     var textureLoader = new THREE.TextureLoader();
 
-    var mat1 = new THREE.MeshBasicMaterial(
+    mat1 = new THREE.MeshBasicMaterial(
 	{map: textureLoader.load("textures/tnt1.png")});
-    var mat2 = new THREE.MeshBasicMaterial(
+    mat2 = new THREE.MeshBasicMaterial(
 	{map: textureLoader.load("textures/tnt2.png")});
-    var mat3 = new THREE.MeshBasicMaterial(
+    mat3 = new THREE.MeshBasicMaterial(
 	{map: textureLoader.load("textures/stonebrick.png")});
-    var mat4 = new THREE.MeshBasicMaterial(
+    mat4 = new THREE.MeshBasicMaterial(
 	{map: textureLoader.load("textures/stonebrick_mossy.png")});
-    var mat5 = new THREE.MeshBasicMaterial(
+    mat5 = new THREE.MeshBasicMaterial(
 	{map: textureLoader.load("textures/sand.png")});
     
     // Create map
@@ -51,7 +51,7 @@ function init()
     for (var x = -10; x <= 10; x++) {
 	for (var z = -10; z <= 10; z++) {
 	    var sand = new THREE.Mesh(geometry, mat5);
-	    sand.position.set(x, 0, z);
+	    sand.position.set(x, -2, z);
 	    scene.add(sand);
 	    
 	    var stone;
@@ -60,16 +60,50 @@ function init()
 	    } else {
 		stone = new THREE.Mesh(geometry, mat4);
 	    }
-	    stone.position.set(x, 1, z);
+	    stone.position.set(x, -1, z);
 	    scene.add(stone);
 	}
     }
+
+    create_wall(-10,0,-10,21,4, 1,[mat3, mat4]);
+    create_wall(-10,0,-10, 1,4,21,[mat3, mat4]);
+    create_wall(-10,0, 10,21,4, 1,[mat3, mat4]);
+    create_wall( 10,0,-10, 1,4,21,[mat3, mat4]);
     
     // Place camera
     camera.position.z = 20;
     camera.position.y = 10;
 }
 
+function create_wall(pos_x, pos_y, pos_z,lenght,height,width, mat)
+{
+    var geometry = new THREE.BoxGeometry(1, 1, 1);
+
+    for (var x = 0; x < lenght; x++) {
+	for (var y = 0; y < height; y++) {
+	    for (var z = 0; z < width; z++) {
+		var rand = Math.floor(Math.random() * mat.length);
+		var stone = new THREE.Mesh(geometry, mat[rand]);
+		stone.position.set(pos_x+x, pos_y+y, pos_z+z);
+		scene.add(stone);
+	    }
+	}
+    }
+
+    for (var x = 0; x < lenght; x+=2) {
+	var rand = Math.floor(Math.random() * mat.length);
+	var stone = new THREE.Mesh(geometry, mat[rand]);
+	stone.position.set(pos_x+x, pos_y+height, pos_z+width-1);
+	scene.add(stone);
+    }
+    
+    for (var z = 0; z < width; z+=2) {
+	var rand = Math.floor(Math.random() * mat.length);
+	var stone = new THREE.Mesh(geometry, mat[rand]);
+	stone.position.set(pos_x+lenght-1, pos_y+height, pos_z+z);
+	scene.add(stone);
+    }
+}
 
 function animate()
 {
