@@ -1,11 +1,13 @@
 var container, stats;
-var scene, camera, renderer;
+var scenePers, cameraPers, sceneOrth, cameraOrth, renderer;
 var controls, clock;
 var mat0, mat1, mat2, mat3, mat4, mat5;
+var up_down, left_right, speed = 1;
+var KEY_Z = 90, KEY_Q = 81, KEY_S = 83, KEY_D = 68;
+
 
 function init()
 {
-
     container = document.createElement( 'div' );
     document.body.appendChild( container );
 
@@ -13,23 +15,31 @@ function init()
     stats = new Stats();
     container.appendChild( stats.dom );
 
-    // scene, camera & renderer
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // scene & camera Perspective
+    scenePers = new THREE.Scene();
+    cameraPers = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    scenePers.add(cameraPers);
 
+    // scene & cameraOrthographic
+    sceneOrth = new THREE.Scene();
+    cameraOrth = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000);
+    sceneOrth.add(cameraOrth);
+    
+    // Renderer
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.autoClear = false;
     document.body.appendChild(renderer.domElement);
-
-    // controls
-    //controls = new THREE.TrackballControls(camera, renderer.domElement);
-    controls = new THREE.PointerLockControls(camera, renderer.domElement);
-    controls.enabled = true;
-    scene.add(controls.getObject());
     
+    // Controls
+    controls = new THREE.TrackballControls(cameraPers, renderer.domElement);
     clock = new THREE.Clock();
 
+    //controls = new THREE.PointerLockControls(cameraPers, renderer.domElement);
+    //controls.enabled = true;
+    //scenePers.add(controls.getObject());
     
+
     // Load textures
     var textureLoader = new THREE.TextureLoader();
 
@@ -45,12 +55,32 @@ function init()
 	{map: textureLoader.load("textures/stonebrick_mossy.png")});
     mat5 = new THREE.MeshBasicMaterial(
 	{map: textureLoader.load("textures/sand.png")});
+
     
     // Create scene
     //load_scene_1();
     //load_scene_2();
     load_scene_3();
 
+    load_orth_cross();
+}
+
+function load_orth_cross()
+{
+    var material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3( 10, 0, -1));
+    geometry.vertices.push(new THREE.Vector3(-10, 0, -1));
+    var line = new THREE.Line(geometry, material);
+    sceneOrth.add(line);
+
+    geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3( 0, -10, -1));
+    geometry.vertices.push(new THREE.Vector3( 0,  10, -1));
+    line = new THREE.Line(geometry, material);
+    
+    sceneOrth.add(line);
 }
 
 function animate()
@@ -58,28 +88,40 @@ function animate()
     stats.update();
     
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
 
-    //controls.update(clock.getDelta());
-}
+    renderer.clear();
+    renderer.render(scenePers, cameraPers);
+    renderer.clearDepth();
+    renderer.render(sceneOrth, cameraOrth);
     
+    if      (up_down == 1)  { move_up(); }
+    else if (up_down == -1) { move_down(); }
+
+    if      (left_right == 1)  { move_left(); }
+    else if (left_right == -1) { move_right(); }
+			           
+    controls.update(clock.getDelta());
+}
+
+
+
 document.addEventListener("keydown", function(event){
-    if      (event.keyCode == KEY_Z) { move_up();    }
-    else if (event.keyCode == KEY_S) { move_down();  }
-    else if (event.keyCode == KEY_Q) { move_right(); }
-    else if (event.keyCode == KEY_D) { move_left();  }
+    if      (event.keyCode == KEY_Z) { up_down = 1;    }
+    else if (event.keyCode == KEY_S) { up_down = -1;   }
+    else if (event.keyCode == KEY_Q) { left_right = 1; }
+    else if (event.keyCode == KEY_D) { left_right = -1; }
 });
 
+document.addEventListener("keyup", function(event){
+    if      (event.keyCode == KEY_Z || event.keyCode == KEY_S) { up_down = 0;    }
+    else if (event.keyCode == KEY_Q || event.keyCode == KEY_D) { left_right = 0; }
+});
 
-KEY_Z		= 90;
-KEY_Q		= 81;
-KEY_S		= 83;
-KEY_D		= 68;
+function move_up()    { controls.getObject().position.z -= speed * clock.getDelta(); }
+function move_down()  { controls.getObject().position.z += speed * clock.getDelta(); }
+function move_left()  { controls.getObject().position.x -= speed * clock.getDelta(); }
+function move_right() { controls.getObject().position.x += speed * clock.getDelta(); }
 
-function move_up()    { controls.getObject().position.z -= 0.1; }
-function move_down()  { controls.getObject().position.z += 0.1; }
-function move_right() { controls.getObject().position.x -= 0.1; }
-function move_left()  { controls.getObject().position.x += 0.1; }
 
 
 function load_scene_1()
@@ -87,12 +129,12 @@ function load_scene_1()
     var geometry = new THREE.BoxGeometry(1, 1, 1);
     var cube = new THREE.Mesh(geometry, mat0);
 
-    scene.add(cube);
+    scenePers.add(cube);
     
     cube.rotation.x += 0.5;
     cube.rotation.y += 0.5;
     
-    camera.position.z = 5;
+    cameraPers.position.z = 5;
 }
 
 function load_scene_2()
@@ -101,25 +143,25 @@ function load_scene_2()
     
     var mat_tnt = [mat1, mat1, mat2, mat2, mat1, mat1];
     var tnt = new THREE.Mesh(geometry, mat_tnt);
-    scene.add(tnt);
+    scenePers.add(tnt);
 
     var mat_stone = [mat3, mat4];
     for (var x = -10; x <= 10; x++) {
 	for (var z = -10; z <= 10; z++) {
 	    var sand = new THREE.Mesh(geometry, mat5);
 	    sand.position.set(x, -2, z);
-	    scene.add(sand);
+	    scenePers.add(sand);
 	    
 	    var rand = Math.floor(Math.random() * mat_stone.length);
 	    var stone = new THREE.Mesh(geometry, mat_stone[rand]);
 	    stone.position.set(x, -1, z);
-	    scene.add(stone);
+	    scenePers.add(stone);
 	}
     }
     
     // Place camera
-    camera.position.z = 30;
-    camera.position.y = 10;
+    cameraPers.position.set(0, 10, 35);
+    cameraPers.rotation.x = -0.5;
 }
 
 function load_scene_3()
@@ -156,10 +198,9 @@ function load_scene_3()
 	    var rand = Math.floor(Math.random() * mat_stone.length);
 	    var stone = new THREE.Mesh(geometry, mat_stone[rand]);
 	    stone.position.set(x, -1, z);
-	    scene.add(stone);
+	    scenePers.add(stone);
 	}
     }
-    
 }
 
 function create_wall(pos_x, pos_y, pos_z,lenght,height,width, mat)
@@ -172,7 +213,7 @@ function create_wall(pos_x, pos_y, pos_z,lenght,height,width, mat)
 		var rand = Math.floor(Math.random() * mat.length);
 		var stone = new THREE.Mesh(geometry, mat[rand]);
 		stone.position.set(pos_x+x, pos_y+y, pos_z+z);
-		scene.add(stone);
+		scenePers.add(stone);
 	    }
 	}
     }
@@ -181,13 +222,13 @@ function create_wall(pos_x, pos_y, pos_z,lenght,height,width, mat)
 	var rand = Math.floor(Math.random() * mat.length);
 	var stone = new THREE.Mesh(geometry, mat[rand]);
 	stone.position.set(pos_x+x, pos_y+height, pos_z+width-1);
-	scene.add(stone);
+	scenePers.add(stone);
     }
     
     for (var z = 0; z < width; z+=2) {
 	var rand = Math.floor(Math.random() * mat.length);
 	var stone = new THREE.Mesh(geometry, mat[rand]);
 	stone.position.set(pos_x+lenght-1, pos_y+height, pos_z+z);
-	scene.add(stone);
+	scenePers.add(stone);
     }
 }

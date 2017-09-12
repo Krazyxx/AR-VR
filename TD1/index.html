@@ -24,6 +24,11 @@
 
       if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
+      /* lockPointer() permet lorsque l'on clique une fois dans la 
+         fenêtre de faire disparaître le pointeur de la souris et de
+         ne plus restreindre les mouvements au bords de la fenêtre. */
+      lockPointer(); 
+      
       init();
 
       animate();
