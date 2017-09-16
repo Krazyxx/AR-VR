@@ -41,7 +41,7 @@
 
       <h2>TD 1 - Navigation 3D et interactions simple</h2>
 
-      Voir l'éxécution du <a href="TD1/" target="_blank">TD1</a>.
+      Voir l'éxécution du <a href="TD1/index.html" target="_blank">TD1</a>.
       
       <h3>1. Première Scène 3D</h3>
       Suivi des instructions de la <a href="https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene" target="_blank">documentation</a> de <i>three.js</i> pour créer un scène, une caméra perspective et un WebGLRenderer dans la fonction init(). Puis ajout d'une cube à la scène, animation de celui dans la fonction animate() et ajout des contrôles permettant de ce déplacer dans la scène. 
@@ -71,7 +71,9 @@
 	</figure>
 	
 	<h3>3. Sélection d'un objet</h3>
-
+	Pour sélectionner un objet, on va ajouter à cette objet une couleur sur chacune de ses faces. Cette couleur sera caché à l'utilisateur par une texture et elle correspondra directement à l'attribut 'id' de l'objet. Ainsi, lorsque l'on cliquera sur un objet, on récupèrera la scène dans un "THREE.WebGLRenderTarget" mais en remplaçant le material de chaque objet par la couleur qu'on lui a attribué au préalable.<br>
+	[afficher image correspondant] <br>
+	Ainsi, en récupérant la position du click, on pourra récupérer la couleur de l'objet, convertir cette couleur afin de retrouver l'id de l'objet et effectuer ainsi un traitement sur l'objet sur lequel on vient de cliquer (comme par exemple le supprimer).
 	
 	<h2>TD2 - Stéréoscopie et profondeur de champ</h2>
 	Voir l'éxécution du <a href="TD2/" target="_blank">TD2</a>
