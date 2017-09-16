@@ -1,10 +1,21 @@
 var container, stats;
-var scenePers, cameraPers, sceneOrth, cameraOrth;
+var scenePers, cameraPers;
+var sceneOrth, cameraOrth;
 var renderer, renderTarget;
 var controls, clock;
 var mat0, mat1, mat2, mat3, mat4, mat5;
-var up_down, left_right, speed = 1;
-var KEY_Z = 90, KEY_Q = 81, KEY_S = 83, KEY_D = 68;
+
+var displayScene = true;
+
+// Déplacement
+var controlsEnabled = false;
+var moveLeft = false;
+var moveRight = false;
+var moveForward = false;
+var moveBackward = false;
+var moveSpeed = 10;
+var velocity = new THREE.Vector3();
+var prevTime = 0;
 
 function init()
 {
@@ -37,10 +48,74 @@ function init()
     controls = new THREE.TrackballControls(cameraPers, renderer.domElement);
     clock = new THREE.Clock();
 
-    //controls = new THREE.PointerLockControls(cameraPers, renderer.domElement);
-    //controls.enabled = true;
-    //scenePers.add(controls.getObject());
+    var onKeyDown = function(event) {
+      switch (event.keyCode) {
+        case 38: // up
+        case 90: // z
+        moveForward = true;
+        break;
+        case 40: // down
+        case 83: // s
+        moveBackward = true;
+        break;
+        case 37: // left
+        case 81: // q
+        moveLeft = true;
+        break;
+        case 39: // right
+        case 68: // d
+        moveRight = true;
+        break;
+        case 69: // e
+        changeDisplayScene();
+        break;
+        case 67: // c
+        changeControls();
+        break;
+        default:
+        break;
+      }
+    }
 
+    var onKeyUp = function(event){
+      switch (event.keyCode) {
+        case 38: // up
+        case 90: // z
+        moveForward = false;
+        break;
+        case 40: // down
+        case 83: // s
+        moveBackward = false;
+        break;
+        case 37: // left
+        case 81: // q
+        moveLeft = false;
+        break;
+        case 39: // right
+        case 68: // d
+        moveRight = false;
+        break;
+        default:
+        break;
+      }
+    }
+
+    var deleteClick = function(event) {
+      scenePers.overrideMaterial = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
+      renderer.render(scenePers, cameraPers, renderTarget);
+
+      var pixelBuffer = new Uint8Array(4);
+      renderer.readRenderTargetPixels(renderTarget, event.clientX, renderTarget.height - event.clientY, 1, 1, pixelBuffer);
+      var id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
+      var obj = scenePers.getObjectById(id);
+      scenePers.remove(obj);
+
+      if (displayScene) { scenePers.overrideMaterial = null; }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
+    document.addEventListener("click", deleteClick);
 
     // Load textures
     var textureLoader = new THREE.TextureLoader();
@@ -67,6 +142,67 @@ function init()
     load_orth_cross();
 }
 
+function animate()
+{
+  stats.update();
+
+  requestAnimationFrame(animate);
+
+  renderer.clear();
+  renderer.render(scenePers, cameraPers);
+  renderer.clearDepth();
+  renderer.render(sceneOrth, cameraOrth);
+
+  if (controlsEnabled) {
+    var delta = clock.getDelta() - prevTime;
+    prevTime = clock.getDelta();
+
+    velocity.x = 0; velocity.y = 0; velocity.z = 0;
+    if ( moveForward ) velocity.z -= moveSpeed * delta;
+    if ( moveBackward ) velocity.z += moveSpeed * delta;
+
+    if ( moveLeft ) velocity.x -= moveSpeed * delta;
+    if ( moveRight ) velocity.x += moveSpeed * delta;
+
+    controls.getObject().translateX(velocity.x);
+    controls.getObject().translateY(velocity.y);
+    controls.getObject().translateZ(velocity.z);
+  } else {
+    controls.update(clock.getDelta());
+  }
+}
+
+
+function changeDisplayScene()
+{
+  displayScene = !displayScene;
+  if (displayScene) {
+    scenePers.overrideMaterial = null;
+  } else {
+    scenePers.overrideMaterial = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
+  }
+}
+
+function changeControls()
+{
+  if (controlsEnabled) {
+    scenePers.remove(controls.getObject());
+    controls = new THREE.TrackballControls(cameraPers);
+  } else {
+    controls = new THREE.PointerLockControls(cameraPers);
+    controls.enabled = true;
+    scenePers.add(controls.getObject());
+  }
+  controlsEnabled = !controlsEnabled;
+}
+
+function applyFaceColor(geom, color) {
+  geom.faces.forEach(function(f) {
+    f.color.setHex(color);
+  });
+}
+
+
 function load_orth_cross()
 {
   var material = new THREE.LineBasicMaterial({ color: 0xffffff });
@@ -83,62 +219,6 @@ function load_orth_cross()
   line = new THREE.Line(geometry, material);
 
   sceneOrth.add(line);
-}
-
-function animate()
-{
-  stats.update();
-
-  requestAnimationFrame(animate);
-
-  renderer.clear();
-  renderer.render(scenePers, cameraPers);
-  renderer.clearDepth();
-  renderer.render(sceneOrth, cameraOrth);
-
-  if      (up_down == 1)  { move_up(); }
-  else if (up_down == -1) { move_down(); }
-
-  if      (left_right == 1)  { move_left(); }
-  else if (left_right == -1) { move_right(); }
-
-  controls.update(clock.getDelta());
-}
-
-document.addEventListener("click", function(event) {
-  scenePers.overrideMaterial = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
-  renderer.render(scenePers, cameraPers, renderTarget);
-
-  var pixelBuffer = new Uint8Array(4);
-  renderer.readRenderTargetPixels(renderTarget, event.clientX, renderTarget.height - event.clientY, 1, 1, pixelBuffer);
-  var id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
-  var obj = scenePers.getObjectById(id);
-  scenePers.remove(obj);
-
-  scenePers.overrideMaterial = null;
-});
-
-document.addEventListener("keydown", function(event){
-  if      (event.keyCode == KEY_Z) { up_down = 1;    }
-  else if (event.keyCode == KEY_S) { up_down = -1;   }
-  else if (event.keyCode == KEY_Q) { left_right = 1; }
-  else if (event.keyCode == KEY_D) { left_right = -1; }
-});
-
-document.addEventListener("keyup", function(event){
-  if      (event.keyCode == KEY_Z || event.keyCode == KEY_S) { up_down = 0;    }
-  else if (event.keyCode == KEY_Q || event.keyCode == KEY_D) { left_right = 0; }
-});
-
-function move_up()    { controls.getObject().position.z -= speed * clock.getDelta(); }
-function move_down()  { controls.getObject().position.z += speed * clock.getDelta(); }
-function move_left()  { controls.getObject().position.x -= speed * clock.getDelta(); }
-function move_right() { controls.getObject().position.x += speed * clock.getDelta(); }
-
-function applyFaceColor(geom, color) {
-  geom.faces.forEach(function(f) {
-    f.color.setHex(color);
-  });
 }
 
 function load_scene_1()
