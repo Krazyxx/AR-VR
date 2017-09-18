@@ -28,9 +28,9 @@
     </script>
 
     <link rel="stylesheet" href="style.css">
-      
+
   </head>
-      
+
   <body>
 
     <div id="toc"></div>
@@ -42,10 +42,10 @@
       <h2>TD 1 - Navigation 3D et interactions simple</h2>
 
       Voir l'éxécution du <a href="TD1/index.html" target="_blank">TD1</a>.
-      
+
       <h3>1. Première Scène 3D</h3>
-      Suivi des instructions de la <a href="https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene" target="_blank">documentation</a> de <i>three.js</i> pour créer un scène, une caméra perspective et un WebGLRenderer dans la fonction init(). Puis ajout d'une cube à la scène, animation de celui dans la fonction animate() et ajout des contrôles permettant de ce déplacer dans la scène. 
-			      
+      Suivi des instructions de la <a href="https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene" target="_blank">documentation</a> de <i>three.js</i> pour créer un scène, une caméra perspective et un WebGLRenderer dans la fonction init(). Puis ajout d'une cube à la scène, animation de celui dans la fonction animate() et ajout des contrôles permettant de ce déplacer dans la scène.
+
 	<figure>
 	  <img src="TD1/image/1. green cube animated.png" width="200" alt="Cube vert animé"/>
 	  <figcaption>Cube vert animé</figcaption>
@@ -62,23 +62,30 @@
 	  <img src="TD1/image/1. scene 3D desigual.png" width="450" alt="Scène 3D desigual"/>
 	  <figcaption>Scène 3D desigual</figcaption>
 	</figure>
-		
+
 	<h3>2. Vue à la première personne</h3>
 	Rajout d'une scène, d'une caméra orthographique et d'une croix centrale blanche.
 	<figure>
 	  <img src="TD1/image/2. Cross central orthographic.png" width="450" alt="Croix centrale caméra orthographique"/>
 	  <figcaption>Croix centrale caméra orthographique</figcaption>
 	</figure>
-	
+
 	<h3>3. Sélection d'un objet</h3>
 	Pour sélectionner un objet, on va ajouter à cette objet une couleur sur chacune de ses faces. Cette couleur sera caché à l'utilisateur par une texture et elle correspondra directement à l'attribut 'id' de l'objet. Ainsi, lorsque l'on cliquera sur un objet, on récupèrera la scène dans un "THREE.WebGLRenderTarget" mais en remplaçant le material de chaque objet par la couleur qu'on lui a attribué au préalable.<br>
-	[afficher image correspondant] <br>
+
 	Ainsi, en récupérant la position du click, on pourra récupérer la couleur de l'objet, convertir cette couleur afin de retrouver l'id de l'objet et effectuer ainsi un traitement sur l'objet sur lequel on vient de cliquer (comme par exemple le supprimer).
-	
+	<br>
+
+    Clavier :
+    <ul>
+        <li>Z,Q,S,D : Déplacement de la caméra (en contrôle trackBall).</li>
+        <li>E : Active/Désactive les couleurs du renderTarget.</li>
+        <li>C : Interverti entre TrackballControls et PointerLockControls</li>
+    </ul>
+
 	<h2>TD2 - Stéréoscopie et profondeur de champ</h2>
 	Voir l'éxécution du <a href="TD2/" target="_blank">TD2</a>
 
-	
     </div>
 
     <script type="text/javascript">
@@ -87,7 +94,7 @@
       'container': 'body', //element to find all selectors in
       'smoothScrolling': true, //enable or disable smooth scrolling on click
       'prefix': 'toc', //prefix for anchor tags and class names
-      'onHighlight': function(el) {}, //called when a new section is highlighted 
+      'onHighlight': function(el) {}, //called when a new section is highlighted
       'highlightOnScroll': true, //add class to heading that is currently in focus
       'highlightOffset': 100, //offset to trigger the next headline
       'anchorName': function(i, heading, prefix) { //custom function for anchor name

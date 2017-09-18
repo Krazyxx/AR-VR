@@ -77,7 +77,7 @@ function init()
       }
     }
 
-    var onKeyUp = function(event){
+    var onKeyUp = function(event) {
       switch (event.keyCode) {
         case 38: // up
         case 90: // z
@@ -100,7 +100,7 @@ function init()
       }
     }
 
-    var deleteClick = function(event) {
+    var mouseClick = function(event) {
       scenePers.overrideMaterial = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
       renderer.render(scenePers, cameraPers, renderTarget);
 
@@ -108,14 +108,29 @@ function init()
       renderer.readRenderTargetPixels(renderTarget, event.clientX, renderTarget.height - event.clientY, 1, 1, pixelBuffer);
       var id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
       var obj = scenePers.getObjectById(id);
-      scenePers.remove(obj);
 
       if (displayScene) { scenePers.overrideMaterial = null; }
+      if(obj == undefined) { return; }
+
+      switch (event.button) {
+        case 0:
+          scenePers.remove(obj);
+          break;
+        case 1:
+          var geometry_block = obj.geometry.clone();
+          var block = new THREE.Mesh(geometry_block, obj.material);
+          block.position.set(obj.position.x, obj.position.y+1, obj.position.z);
+          applyFaceColor(geometry_block, block.id);
+          scenePers.add(block);
+          break;
+        default:
+          break;
+      }
     }
 
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
-    document.addEventListener("click", deleteClick);
+    document.addEventListener("click", mouseClick);
 
     // Load textures
     var textureLoader = new THREE.TextureLoader();
@@ -186,7 +201,6 @@ function changeDisplayScene()
 function changeControls()
 {
   if (controlsEnabled) {
-    scenePers.remove(controls.getObject());
     controls = new THREE.TrackballControls(cameraPers);
   } else {
     controls = new THREE.PointerLockControls(cameraPers);
