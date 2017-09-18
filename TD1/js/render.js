@@ -110,21 +110,21 @@ function init()
         var obj = scenePers.getObjectById(id);
 
         if (displayScene) { scenePers.overrideMaterial = null; }
-        if(obj == undefined) { return; }
+        if (obj == undefined) { return; }
 
         switch (event.button) {
             case 0:
-            scenePers.remove(obj);
-            break;
+                scenePers.remove(obj);
+                break;
             case 1:
-            var geometry_block = obj.geometry.clone();
-            var block = new THREE.Mesh(geometry_block, obj.material);
-            block.position.set(obj.position.x, obj.position.y+1, obj.position.z);
-            applyFaceColor(geometry_block, block.id);
-            scenePers.add(block);
-            break;
+                var geometry_block = obj.geometry.clone();
+                var block = new THREE.Mesh(geometry_block, obj.material);
+                block.position.set(obj.position.x, obj.position.y+1, obj.position.z);
+                applyFaceColor(geometry_block, block.id);
+                scenePers.add(block);
+                break;
             default:
-            break;
+                break;
         }
     }
 

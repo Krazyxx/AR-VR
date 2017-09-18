@@ -37,15 +37,17 @@
     <div id="content">
         <h1 style="text-align:center">AR-VR - Gouraud Jimmy</h1>
 
-        <h2>TD 1 - Navigation 3D et interactions simple</h2>
+        <h2>TD 1 - Navigation 3D et interactions simples</h2>
 
-        Pour voir l'ensemble des fonctionnalité du TD1: <a href="TD1/index.html" target="_blank">cliquez ici !</a>
+        Pour voir l'ensemble des fonctionnalités du TD1: <a href="TD1/index.html" target="_blank">cliquez ici !</a>
         <br /><br />
         Raccourci clavier :
         <ul>
             <li>Z,Q,S,D (ou les flèches bidirectinnelles) : Déplacement de la caméra (en contrôle trackBall).</li>
-            <li>E : Active/Désactive les couleurs du renderTarget.</li>
-            <li>C : Swap entre TrackballControls et PointerLockControls</li>
+            <li>E : Active/Désactive les couleurs du <code class="inline-code">renderTarget</code> .</li>
+            <li>C : Swap entre <code class="inline-code">TrackballControls</code>  et <code class="inline-code">PointerLockControls</code></li>
+            <li>clic gauche : détruit le block ciblés.</li>
+            <li>clic molette : créer un bloc identique au-dessus du bloc ciblé.</li>
         </ul>
 
         <h3>1. Première Scène 3D</h3>
@@ -277,13 +279,58 @@ function animate() {
         </figure>
 
         <h3>3. Sélection d'un objet</h3>
-        Pour sélectionner un objet, on va ajouter à cet objet une couleur sur chacune de ses faces. Cette couleur sera caché à l'utilisateur par une texture et elle correspondra directement à l'attribut 'id' de l'objet. Ainsi, lorsque l'on cliquera sur un objet, on récupèrera la scène dans un "THREE.WebGLRenderTarget" mais en remplaçant le material de chaque objet par la couleur qu'on lui a attribué au préalable.<br>
+        Pour sélectionner un objet, nous utilisons la technique du <i>color picking</i>
+        qui consiste à donner à stocker dans un <code class="inline-code">THREE.WebGLRenderTarget</code>
+        la couleur de chaque objet (qui correspond à l'identifiant unique de l'objet).
+        Ainsi, il suffit de lire dans cette image la couleur du pixel sous le curseur pour retrouver l'ID
+        de l'objet à sélectionner.
+        <figure>
+            <img src="TD1/image/3. renderTarget.png" width="450" alt="Render Target"/>
+            <figcaption>Render Target</figcaption>
+        </figure>
 
-        Ainsi, en récupérant la position du click, on pourra récupérer la couleur de l'objet, convertir cette couleur afin de retrouver l'id de l'objet et effectuer ainsi un traitement sur l'objet sur lequel on vient de cliquer (comme par exemple le supprimer).
+        Aprés avoir récupéré l'objet, il suffit de l'utiliser comme on le souhaite.
+        Dans notre cas, en effectuant un clic gauche sur un objet, on le supprime et en effectuant
+        un clic molette sur l'objet, on en créer un identique au-dessus.
         <br>
 
+        <div class="highlight">
+        <pre><code class="js h1js javascript">function init() {
+    var mouseClick = function(event) {
+        scenePers.overrideMaterial = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
+        renderer.render(scenePers, cameraPers, renderTarget);
+
+        var pixelBuffer = new Uint8Array(4);
+        renderer.readRenderTargetPixels(renderTarget, event.clientX, renderTarget.height - event.clientY, 1, 1, pixelBuffer);
+        var id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
+        var obj = scenePers.getObjectById(id);
+
+        scenePers.overrideMaterial = null;
+
+        if (obj == undefined) { return; }
+
+        switch (event.button) {
+            case 0:
+                scenePers.remove(obj);
+                break;
+            case 1:
+                var geometry_block = obj.geometry.clone();
+                var block = new THREE.Mesh(geometry_block, obj.material);
+                block.position.set(obj.position.x, obj.position.y+1, obj.position.z);
+                applyFaceColor(geometry_block, block.id);
+                scenePers.add(block);
+                break;
+            default:
+                break;
+        }
+    }
+
+    document.addEventListener("click", mouseClick);
+}
+</code></pre>
+        </div>
         <h2>TD2 - Stéréoscopie et profondeur de champ</h2>
-        Pour voir l'ensemble des fonctionnalité du TD2: <a href="TD2/index.html" target="_blank">cliquez ici !</a>
+        Pour voir l'ensemble des fonctionnalités du TD2: <a href="TD2/index.html" target="_blank">cliquez ici !</a>
 
     </div>
 
