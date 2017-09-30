@@ -1,10 +1,9 @@
 var displayParameters = {
 
-
     // parameters for stereo rendering
     // physical screen diagonal -- in mm
-    screenDiagonal: 685.8,
-    screenResolutionWidth: 2560,
+    screenDiagonal: 550, //685.8,
+    screenResolutionWidth: 1920, //2560,
     aspectRatio: 16 / 9,
 
     // inter pupillar distance -- in mm

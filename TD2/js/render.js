@@ -17,6 +17,8 @@ var pointerLocked = false;
 
 var velocity = new THREE.Vector3(0,0,0);
 
+var anaglyph_camera = 0; // 0 = camera Left ; 1 = cameraRight
+
 function init() {
 
     clock = new THREE.Clock();
@@ -139,6 +141,9 @@ function init() {
             case 39: // right
             case 68: // d
             moveRight = true;
+            break;
+            case 67: //c
+            anaglyphRenderer.camera = !anaglyphRenderer.camera;
             break;
             default:
             break;
