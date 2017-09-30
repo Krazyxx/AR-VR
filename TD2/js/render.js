@@ -143,7 +143,10 @@ function init() {
             moveRight = true;
             break;
             case 67: //c
-            anaglyphRenderer.camera = !anaglyphRenderer.camera;
+            anaglyphRenderer.cameraDisplayed++;
+            if (anaglyphRenderer.cameraDisplayed == 3) {
+                anaglyphRenderer.cameraDisplayed = 0;
+            }
             break;
             default:
             break;
