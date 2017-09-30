@@ -1,39 +1,355 @@
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <title>RVRA TD1</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-  </head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AR-VR - Gouraud Jimmy</title>
 
-  <body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github-gist.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
 
-    <!-- external libraries -->
-    <script src="js/libs/three.min.js"></script>
-    <script src="js/libs/Detector.js"></script>
-    <script src="js/libs/stats.min.js"></script>
-    <script src='js/libs/TrackballControls.js'></script>
-    <script src='js/libs/PointerLockControls.js'></script>
-    <script src='js/libs/lockPointer.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/toc.min.js"></script>
 
-    <!-- internal scripts -->
-    <script src="js/render.js"></script>
-
-    <script>
-
-      if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-
-      /* lockPointer() permet lorsque l'on clique une fois dans la 
-         fenêtre de faire disparaître le pointeur de la souris et de
-         ne plus restreindre les mouvements au bords de la fenêtre. */
-      lockPointer(); 
-      
-      init();
-
-      animate();
-
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
     </script>
 
-  </body>
-</html>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <div id="toc"></div>
+
+    <div id="content">
+        <h1 style="text-align:center">AR-VR - Gouraud Jimmy</h1>
+
+        <h2>TD 1 - Navigation 3D et interactions simples</h2>
+
+        Pour voir l'ensemble des fonctionnalités du TD1 : <a href="TD1.html" target="_blank">cliquez ici !</a>
+        <br /><br />
+        Raccourci clavier :
+        <ul>
+            <li>Z,Q,S,D (ou les flèches bidirectinnelles) : Déplacement de la caméra (en contrôle trackBall).</li>
+            <li>E : Active/Désactive les couleurs du <code class="inline-code">renderTarget</code> .</li>
+            <li>C : Swap entre <code class="inline-code">TrackballControls</code>  et <code class="inline-code">PointerLockControls</code></li>
+            <li>clic gauche : détruit le block ciblés.</li>
+            <li>clic molette : créer un bloc identique au-dessus du bloc ciblé.</li>
+        </ul>
+
+        <h3>1. Première Scène 3D</h3>
+        On suit simplement les instructions (<a href="https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene" target="_blank">documentation</a> de <i>three.js</i>),
+        afin de créer une scène (<code class="inline-code">THREE.Scene</code>), une caméra perspective (<code class="inline-code">THREE.PerspectiveCamera</code>) et un rendu (<code class="inline-code">THREE.WebGLRenderer</code>) dans la fonction <code class="inline-code">init()</code>.
+        On ajoute ensuite un cube à cette scène avec une couleur (ici verte) et on effectue le rendu de la scène dans la fonction <code class="inline-code">animate()</code>.
+        <div class="highlight">
+<pre><code class="js h1js javascript">var renderer, scenePers, cameraPers;
+
+function init() {
+    // On créé la scène avec une caméra
+    scenePers = new THREE.Scene();
+    cameraPers = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    scenePers.add(cameraPers);
+
+    // On créer un Renderer pour le rendu
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.autoClear = false;
+    document.body.appendChild(renderer.domElement);
+
+    // On ajoute un cube vert dans la scène
+    var geometry = new THREE.BoxGeometry(1, 1, 1);
+    var mat = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    var cube = new THREE.Mesh(geometry, mat);
+    scenePers.add(cube);
+
+    // On recule la caméra pour pouvoir voir le cube
+    cameraPers.position.z = 5;
+}
+
+function animate() {
+    renderer.render(scenePers, cameraPers);
+}
+</code></pre>
+        </div>
+
+        <br />
+        On ajoute ensuite des contrôles permettant de se déplacer dans la scène à l'aide de la souris.
+        Pour cela, on utilise la classe <code class="inline-code">THREE.TrackballControls</code> ainsi que la
+        classe <code class="inline-code">THREE.Clock</code> qui nous permet de savoir le temps écoulé entre deux appels
+        (à l'aide de la méthode <code class="inline-code">getDelta()</code>).
+        <div class="highlight">
+<pre><code class="js h1js javascript">var controls, clock;
+
+function init() {
+    // Ajout du contrôle de la caméra à l'aide de la souris
+    controls = new THREE.TrackballControls(cameraPers, renderer.domElement);
+    clock = new THREE.Clock();
+}
+
+function animate() {
+    controls.update(clock.getDelta());
+}
+</code></pre>
+        </div>
+        <br />
+
+        On peut ensuite s'amuser à modifier les propriétés du cube dans la fonction <code class="inline-code">animate()</code>,
+        afin d'animé le cube !
+
+        <figure>
+            <img src="image/1. green cube animated.png" width="200" alt="Cube vert animé"/>
+            <figcaption>Cube vert animé</figcaption>
+        </figure>
+
+        On essaye de faire une scène un peu plus complexe en rajoutant des cubes et en leur applicant des textures
+        en utilisant <code class="inline-code">THREE.TextureLoader</code>. On peut de plus "personnaliser" la texture
+        d'un cube en définissant la texture à afficher sur chacunes de ses faces. Pour faire cela, on va créer un tableau
+        de matériaux comme second argument du constructeur de <code class="inline-code">THREE.Mesh</code>.
+
+
+        <div class="highlight">
+<pre><code class="js h1js javascript">function init() {
+    // On charge les textures
+    var textureLoader = new THREE.TextureLoader();
+    var mat_tnt1 = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/tnt1.png")});
+    var mat_tnt2 = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/tnt2.png")});
+
+    // On assemble notre texture tnt
+    var mat_tnt = [mat_tnt1, mat_tnt1, mat_tnt2, mat_tnt2, mat_tnt1, mat_tnt1];
+    var tnt = new THREE.Mesh(geometry, mat_tnt);
+    scenePers.add(tnt);
+
+    // On peut rajouter d'autres cubes de la même façon
+}
+</code></pre>
+        </div>
+
+        <figure>
+            <img src="image/1. scene 3D with tnt, stone and sand.png" width="450" alt="Scène 3D"/>
+            <figcaption>Scène 3D</figcaption>
+        </figure>
+
+        Bien sûr, il y a parfois quelques coquilles lors de l'implémentation des différentes fonctionnalités...
+        Petit bug à cause d'une erreur d'écriture ('lenght' au lieu de 'length') ce qui a provoqué des valeurs erronées.
+        <figure>
+            <img src="image/1. scene 3D desigual.png" width="450" alt="Scène 3D desigual"/>
+            <figcaption>Scène 3D desigual</figcaption>
+        </figure>
+
+        <h3>2. Vue à la première personne</h3>
+        On va remplacer le contrôle <code class="inline-code">THREE.TrackballControls</code> par un contrôle de type FPS <code class="inline-code">THREE.PointerLockControls</code>.
+        On va de plus ajouter des raccourcis clavier pour pouvoir se déplacer à l'aide des touches directionnels (ou de 'ZQSD').
+
+        <div class="highlight">
+<pre><code class="js h1js javascript">
+var controls;
+var prevTime; // Pour calculer le delta dans la fonction animate()
+
+function init() {
+    // Ajout du contrôle FPS
+    controls = new THREE.PointerLockControls(cameraPers);
+    controls.enabled = true;
+    scenePers.add(controls.getObject());
+
+    // Ajout de la gestion des événements clavier
+    var onKeyDown = function(event) {
+      switch (event.keyCode) {
+        case 38: // up
+        case 90: // z
+          moveForward = true;
+          break;
+        case 40: // down
+        case 83: // s
+          moveBackward = true;
+          break;
+        case 37: // left
+        case 81: // q
+          moveLeft = true;
+          break;
+        case 39: // right
+        case 68: // d
+          moveRight = true;
+          break;
+        default:
+          break;
+      }
+    }
+
+    var onKeyUp = function(event) {
+      switch (event.keyCode) {
+        case 38: // up
+        case 90: // z
+          moveForward = false;
+          break;
+        case 40: // down
+        case 83: // s
+          moveBackward = false;
+          break;
+        case 37: // left
+        case 81: // q
+          moveLeft = false;
+          break;
+        case 39: // right
+        case 68: // d
+          moveRight = false;
+          break;
+        default:
+          break;
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
+}
+
+function animate() {
+    var delta = clock.getDelta() - prevTime;
+    prevTime = clock.getDelta();
+
+    velocity.x = 0; velocity.y = 0; velocity.z = 0;
+
+    if (moveForward) velocity.z -= moveSpeed * delta;
+    if (moveBackward) velocity.z += moveSpeed * delta;
+
+    if (moveLeft) velocity.x -= moveSpeed * delta;
+    if (moveRight) velocity.x += moveSpeed * delta;
+
+    controls.getObject().translateX(velocity.x);
+    controls.getObject().translateY(velocity.y);
+    controls.getObject().translateZ(velocity.z);
+}
+</code></pre>
+        </div>
+        L'ajout de la fonction <code class="inline-code">lockPointer()</code> dans <code>index.html</code> avant
+        <code class="inline-code">init()</code> permet de lever la restriction du pointeur de la souris.
+        <br /><br />
+        On créer une scène et une caméra orthographique dans laquel on ajoute une croix centrale blanche afin
+        de permettre à l'utilisateur de mieux se repérer.
+        <div class="highlight">
+<pre><code class="js h1js javascript">var sceneOrth, cameraOrth;
+
+function init() {
+    // Ajout d'une scène et d'une caméra orthographique
+    sceneOrth = new THREE.Scene();
+    cameraOrth = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000);
+    sceneOrth.add(cameraOrth);
+
+    // Ajout de la croix centrale blanche
+    var material = new THREE.LineBasicMaterial({color: 0xffffff});
+
+    var geometry1 = new THREE.Geometry();
+    geometry1.vertices.push(new THREE.Vector3(10, 0, -1));
+    geometry1.vertices.push(new THREE.Vector3(-10, 0, -1));
+    var line1 = new THREE.Line(geometry1, material);
+    sceneOrth.add(line1);
+
+    var geometry2 = new THREE.Geometry();
+    geometry2.vertices.push(new THREE.Vector3(0, -10, -1));
+    geometry2.vertices.push(new THREE.Vector3(0,  10, -1));
+    var line2 = new THREE.Line(geometry2, material);
+    sceneOrth.add(line);
+}
+
+function animate() {
+    // Affichage du rendu de la caméra perspective puis orthographique
+    renderer.clear();
+    renderer.render(scenePers, cameraPers);
+    renderer.clearDepth();
+    renderer.render(sceneOrth, cameraOrth);
+}
+</code></pre>
+        </div>
+
+        <figure>
+            <img src="image/2. Cross central orthographic.png" width="450" alt="Caméra orthographique - Croix centrale"/>
+            <figcaption>Caméra orthographique - Croix centrale</figcaption>
+        </figure>
+
+        <h3>3. Sélection d'un objet</h3>
+        Pour sélectionner un objet, nous utilisons la technique du <i>color picking</i>
+        qui consiste à donner à stocker dans un <code class="inline-code">THREE.WebGLRenderTarget</code>
+        la couleur de chaque objet (qui correspond à l'identifiant unique de l'objet).
+        Ainsi, il suffit de lire dans cette image la couleur du pixel sous le curseur pour retrouver l'ID
+        de l'objet à sélectionner.
+        <figure>
+            <img src="image/3. renderTarget.png" width="450" alt="Render Target"/>
+            <figcaption>Render Target</figcaption>
+        </figure>
+
+        Aprés avoir récupéré l'objet, il suffit de l'utiliser comme on le souhaite.
+        Dans notre cas, en effectuant un clic gauche sur un objet, on le supprime et en effectuant
+        un clic molette sur l'objet, on en créer un identique au-dessus.
+        <br>
+
+        <div class="highlight">
+        <pre><code class="js h1js javascript">function init() {
+    var mouseClick = function(event) {
+        scenePers.overrideMaterial = new THREE.MeshBasicMaterial({ vertexColors: THREE.FaceColors });
+        renderer.render(scenePers, cameraPers, renderTarget);
+
+        var pixelBuffer = new Uint8Array(4);
+        renderer.readRenderTargetPixels(renderTarget, event.clientX, renderTarget.height - event.clientY, 1, 1, pixelBuffer);
+        var id = (pixelBuffer[0] << 16) | (pixelBuffer[1] << 8) | (pixelBuffer[2]);
+        var obj = scenePers.getObjectById(id);
+
+        scenePers.overrideMaterial = null;
+
+        if (obj == undefined) { return; }
+
+        switch (event.button) {
+            case 0:
+                scenePers.remove(obj);
+                break;
+            case 1:
+                var geometry_block = obj.geometry.clone();
+                var block = new THREE.Mesh(geometry_block, obj.material);
+                block.position.set(obj.position.x, obj.position.y+1, obj.position.z);
+                applyFaceColor(geometry_block, block.id);
+                scenePers.add(block);
+                break;
+            default:
+                break;
+        }
+    }
+
+    document.addEventListener("click", mouseClick);
+}
+</code></pre>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    $('#toc').toc({
+        'selectors': 'h2,h3,h4', //elements to use as headings
+        'container': 'body', //element to find all selectors in
+        'smoothScrolling': true, //enable or disable smooth scrolling on click
+        'prefix': 'toc', //prefix for anchor tags and class names
+        'onHighlight': function(el) {}, //called when a new section is highlighted
+        'highlightOnScroll': true, //add class to heading that is currently in focus
+        'highlightOffset': 100, //offset to trigger the next headline
+        'anchorName': function(i, heading, prefix) { //custom function for anchor name
+            return prefix+i;
+        },
+        'headerText': function(i, heading, $heading) { //custom function building the header-item text
+            return $heading.text();
+        },
+        'itemClass': function(i, heading, $heading, prefix) { // custom function for item class
+            return $heading[0].tagName.toLowerCase();
+        }
+    });
+    </script>
+
+</body>

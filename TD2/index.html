@@ -1,40 +1,173 @@
-<!DOCTYPE html>
-<html lang="fr">
-	<head>
-		<title>RVRA TD2</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" type="text/css" href="css/main.css">
-	</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AR-VR - Gouraud Jimmy</title>
 
-	<body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github-gist.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
 
-		<!-- external libraries -->
-		<script src="js/libs/three.min.js"></script>
-		<script src="js/libs/Detector.js"></script>
-		<script src="js/libs/stats.min.js"></script>
-		<script src='js/libs/TrackballControls.js'></script>
-		<script src='js/libs/PointerLockControls.js'></script>
-		<script src='js/libs/lockPointer.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/toc.min.js"></script>
 
-		<!-- internal scripts -->
-		<script src="js/render.js"></script>
-		<script src="js/utils.js"></script>
-		<script src="js/displayParameters.js"></script>
-		<script src="js/anaglyphRenderer.js"></script>
-		<script src="js/dofRenderer.js"></script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+    </script>
 
-		<script>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
 
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+<body>
 
-			lockPointer();
+    <div id="toc"></div>
 
-			init();
+    <div id="content">
+        <h1 style="text-align:center">AR-VR - Gouraud Jimmy</h1>
 
-			animate();
+        <h2>TD2 - Stéréoscopie et profondeur de champ</h2>
 
-		</script>
+        Pour voir l'ensemble des fonctionnalités du TD2 : <a href="TD2.html" target="_blank">cliquez ici !</a>
+        <br /><br />
+        Raccourci clavier :
+        <ul>
+            <li>Z,Q,S,D (ou les flèches bidirectinnelles) : Déplacement de la caméra (en contrôle trackBall).</li>
+            <li>C : Change l'affichage (affichage anaglyphe/cameraRight/cameraLeft)</li>
+        </ul>
 
-	</body>
-</html>
+        <h3>1. Stéréoscopie</h3>
+        <h4>1.1. Principe général</h4>
+        <div class="highlight">
+            <pre><code class="js javascript">this.update = function ( camera ) {
+    camera.updateMatrixWorld();
+    this.cameraRight.matrixWorld = camera.matrixWorld.clone();
+    this.cameraLeft.matrixWorld = camera.matrixWorld.clone();
+
+    var znear = camera.near;
+    var zfar = camera.far;
+
+    var d = displayParameters.distanceScreenViewer;
+    var w = displayParameters.screenSize().x; // width
+    var h = displayParameters.screenSize().y; // height
+    var ipd = displayParameters.ipd;
+
+    var top = znear * (h / (2.0 * d));
+    var bottom = - top;
+
+    // left eye
+    var L_right = znear * ((w + ipd) / (2.0 * d));
+    var L_left = - znear * ((w - ipd) / (2.0 * d));
+    var translateLeft = new THREE.Matrix4();
+    translateLeft.makeTranslation(-displayParameters.ipd/2, 0, 0);
+    this.cameraLeft.matrixWorld.multiplyMatrices(this.cameraLeft.matrixWorld, translateLeft);
+    this.cameraLeft.projectionMatrix.makePerspective(L_left, L_right, top, bottom, znear, zfar);
+
+    // right eye
+    var R_right = - L_left;
+    var R_left = - L_right;
+    var translateRight = new THREE.Matrix4();
+    translateRight.makeTranslation(displayParameters.ipd/2, 0, 0);
+    this.cameraRight.matrixWorld.multiplyMatrices(this.cameraRight.matrixWorld, translateRight);
+    this.cameraRight.projectionMatrix.makePerspective(R_left, R_right, top, bottom, znear, zfar);
+}</code></pre>
+        </figure>
+
+        <figure>
+            <center>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <img src="image/1.1 Camera Left.png" width="300" alt="Camera Left"/>
+                                <figcaption>Camera Left</figcaption>
+                            </td>
+                            <td>
+                                <img src="image/1.1 Camera Right.png" width="300" alt="Camera Right"/>
+                                <figcaption>Camera Right</figcaption>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </center>
+        </figure>
+
+
+        <h4>1.2. Anaglyphe</h4>
+
+        <div class="highlight">
+            <pre><code class="js javascript">this.cameraDisplayed = 0; // 0 for anaglyph ; 1 for cameraRight ; 2 for cameraLeft
+
+his.render = function ( scene, camera ) {
+    this.update(camera);
+
+    switch (this.cameraDisplayed) {
+        case 0:
+            var gl = renderer.domElement.getContext( 'webgl' );
+
+            renderer.clearDepth();
+            gl.colorMask(true, false, false, true); // red
+            renderer.render(scene, this.cameraLeft);
+
+            renderer.clearDepth();
+            gl.colorMask(false, true, true, true); // cyan
+            renderer.render(scene, this.cameraRight);
+
+            gl.colorMask(true, true, true, true);
+            break;
+        case 1:
+            renderer.render(scene, this.cameraRight);
+            break;
+        case 2:
+            renderer.render(scene, this.cameraLeft);
+            break;
+        default:
+            break;
+    }
+}</code></pre>
+        </figure>
+
+        <figure>
+            <img src="image/1.2 Anaglyphe.png" width="500" alt="Anaglyphe"/>
+            <figcaption>Anaglyphe</figcaption>
+        </figure>
+
+        <h3>2. Profondeur de champs</h3>
+        <h4>2.1 Cercle de confusion</h4>
+        <h4>2.2 Rendu avec profondeur de champ</h4>
+
+    </div>
+
+    <script type="text/javascript">
+    $('#toc').toc({
+        'selectors': 'h2,h3,h4', //elements to use as headings
+        'container': 'body', //element to find all selectors in
+        'smoothScrolling': true, //enable or disable smooth scrolling on click
+        'prefix': 'toc', //prefix for anchor tags and class names
+        'onHighlight': function(el) {}, //called when a new section is highlighted
+        'highlightOnScroll': true, //add class to heading that is currently in focus
+        'highlightOffset': 100, //offset to trigger the next headline
+        'anchorName': function(i, heading, prefix) { //custom function for anchor name
+            return prefix+i;
+        },
+        'headerText': function(i, heading, $heading) { //custom function building the header-item text
+            return $heading.text();
+        },
+        'itemClass': function(i, heading, $heading, prefix) { // custom function for item class
+            return $heading[0].tagName.toLowerCase();
+        }
+    });
+    </script>
+
+</body>

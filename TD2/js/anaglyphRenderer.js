@@ -5,7 +5,7 @@ function AnaglyphRenderer ( renderer ) {
     this.cameraLeft.matrixAutoUpdate = false;
     this.cameraRight = new THREE.Camera();
     this.cameraRight.matrixAutoUpdate = false;
-    this.cameraDisplayed = 0; // 0 for both ; 1 for cameraRight ; 2 for cameraLeft
+    this.cameraDisplayed = 0; // 0 for anaglyph ; 1 for cameraRight ; 2 for cameraLeft
 
     this.update = function ( camera ) {
         camera.updateMatrixWorld();
@@ -49,11 +49,11 @@ function AnaglyphRenderer ( renderer ) {
                 var gl = renderer.domElement.getContext( 'webgl' );
 
                 renderer.clearDepth();
-                gl.colorMask(true, false, false, true);
+                gl.colorMask(true, false, false, true); // red
                 renderer.render(scene, this.cameraLeft);
 
                 renderer.clearDepth();
-                gl.colorMask(false, true, true, true);
+                gl.colorMask(false, true, true, true); // cyan
                 renderer.render(scene, this.cameraRight);
 
                 gl.colorMask(true, true, true, true);
