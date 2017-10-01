@@ -35,9 +35,7 @@
     <div id="toc"></div>
 
     <div id="content">
-        <h1 style="text-align:center">AR-VR - Gouraud Jimmy</h1>
-
-        <h2>TD 1 - Navigation 3D et interactions simples</h2>
+        <h1 style="text-align:center">TD1 - Navigation 3D et interactions simples</h1>
 
         Pour voir l'ensemble des fonctionnalités du TD1 : <a href="TD1.html" target="_blank">cliquez ici !</a>
         <br /><br />
@@ -50,12 +48,12 @@
             <li>clic molette : créer un bloc identique au-dessus du bloc ciblé.</li>
         </ul>
 
-        <h3>1. Première Scène 3D</h3>
+        <h2>1. Première Scène 3D</h2>
         On suit simplement les instructions (<a href="https://threejs.org/docs/index.html#manual/introduction/Creating-a-scene" target="_blank">documentation</a> de <i>three.js</i>),
         afin de créer une scène (<code class="inline-code">THREE.Scene</code>), une caméra perspective (<code class="inline-code">THREE.PerspectiveCamera</code>) et un rendu (<code class="inline-code">THREE.WebGLRenderer</code>) dans la fonction <code class="inline-code">init()</code>.
         On ajoute ensuite un cube à cette scène avec une couleur (ici verte) et on effectue le rendu de la scène dans la fonction <code class="inline-code">animate()</code>.
         <div class="highlight">
-<pre><code class="js h1js javascript">var renderer, scenePers, cameraPers;
+<pre><code class="js javascript">var renderer, scenePers, cameraPers;
 
 function init() {
     // On créé la scène avec une caméra
@@ -91,7 +89,7 @@ function animate() {
         classe <code class="inline-code">THREE.Clock</code> qui nous permet de savoir le temps écoulé entre deux appels
         (à l'aide de la méthode <code class="inline-code">getDelta()</code>).
         <div class="highlight">
-<pre><code class="js h1js javascript">var controls, clock;
+<pre><code class="js javascript">var controls, clock;
 
 function init() {
     // Ajout du contrôle de la caméra à l'aide de la souris
@@ -121,7 +119,7 @@ function animate() {
 
 
         <div class="highlight">
-<pre><code class="js h1js javascript">function init() {
+<pre><code class="js javascript">function init() {
     // On charge les textures
     var textureLoader = new THREE.TextureLoader();
     var mat_tnt1 = new THREE.MeshBasicMaterial({map: textureLoader.load("textures/tnt1.png")});
@@ -149,7 +147,7 @@ function animate() {
             <figcaption>Scène 3D desigual</figcaption>
         </figure>
 
-        <h3>2. Vue à la première personne</h3>
+        <h2>2. Vue à la première personne</h2>
         On va remplacer le contrôle <code class="inline-code">THREE.TrackballControls</code> par un contrôle de type FPS <code class="inline-code">THREE.PointerLockControls</code>.
         On va de plus ajouter des raccourcis clavier pour pouvoir se déplacer à l'aide des touches directionnels (ou de 'ZQSD').
 
@@ -278,7 +276,7 @@ function animate() {
             <figcaption>Caméra orthographique - Croix centrale</figcaption>
         </figure>
 
-        <h3>3. Sélection d'un objet</h3>
+        <h2>3. Sélection d'un objet</h2>
         Pour sélectionner un objet, nous utilisons la technique du <i>color picking</i>
         qui consiste à donner à stocker dans un <code class="inline-code">THREE.WebGLRenderTarget</code>
         la couleur de chaque objet (qui correspond à l'identifiant unique de l'objet).

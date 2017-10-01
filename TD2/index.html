@@ -35,9 +35,7 @@
     <div id="toc"></div>
 
     <div id="content">
-        <h1 style="text-align:center">AR-VR - Gouraud Jimmy</h1>
-
-        <h2>TD2 - Stéréoscopie et profondeur de champ</h2>
+        <h1 style="text-align:center">TD2 - Stéréoscopie et profondeur de champ</h1>
 
         Pour voir l'ensemble des fonctionnalités du TD2 : <a href="TD2.html" target="_blank">cliquez ici !</a>
         <br /><br />
@@ -47,8 +45,8 @@
             <li>C : Change l'affichage (affichage anaglyphe/cameraRight/cameraLeft)</li>
         </ul>
 
-        <h3>1. Stéréoscopie</h3>
-        <h4>1.1. Principe général</h4>
+        <h2>1. Stéréoscopie</h2>
+        <h3>1.1. Principe général</h3>
         <div class="highlight">
             <pre><code class="js javascript">this.update = function ( camera ) {
     camera.updateMatrixWorld();
@@ -82,7 +80,7 @@
     this.cameraRight.matrixWorld.multiplyMatrices(this.cameraRight.matrixWorld, translateRight);
     this.cameraRight.projectionMatrix.makePerspective(R_left, R_right, top, bottom, znear, zfar);
 }</code></pre>
-        </figure>
+        </div>
 
         <figure>
             <center>
@@ -104,7 +102,7 @@
         </figure>
 
 
-        <h4>1.2. Anaglyphe</h4>
+        <h3>1.2. Anaglyphe</h3>
 
         <div class="highlight">
             <pre><code class="js javascript">this.cameraDisplayed = 0; // 0 for anaglyph ; 1 for cameraRight ; 2 for cameraLeft
@@ -136,16 +134,36 @@ his.render = function ( scene, camera ) {
             break;
     }
 }</code></pre>
-        </figure>
+        </div>
 
         <figure>
             <img src="image/1.2 Anaglyphe.png" width="500" alt="Anaglyphe"/>
             <figcaption>Anaglyphe</figcaption>
         </figure>
 
-        <h3>2. Profondeur de champs</h3>
-        <h4>2.1 Cercle de confusion</h4>
-        <h4>2.2 Rendu avec profondeur de champ</h4>
+        <h2>2. Profondeur de champs</h2>
+        <div class="highlight">
+            <pre><code class="js javascript">var displayParameters = {
+   // ...
+
+   // amount of distance in mm between adjacent pixels
+   pixelPitch: function() {
+       var screenResolutionHeight = this.screenResolutionWidth / this.aspectRatio;
+       var screenResolutionDiagonal = Math.sqrt(this.screenResolutionWidth * this.screenResolutionWidth + screenResolutionHeight * screenResolutionHeight);
+       return screenResolutionDiagonal / this.screenDiagonal;
+   },
+
+   // physical display width and height -- in mm
+   screenSize: function() {
+       var pixelPitch = this.pixelPitch();
+       var screenResolutionHeight =  this.screenResolutionWidth / this.aspectRatio;
+       return new THREE.Vector2(this.screenResolutionWidth / pixelPitch, screenResolutionHeight / pixelPitch);
+   }
+}</code></pre>
+        </div>
+
+        <h3>2.1. Cercle de confusion</h3>
+        <h3>2.2. Rendu avec profondeur de champ</h3>
 
     </div>
 
