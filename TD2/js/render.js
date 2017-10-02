@@ -275,7 +275,8 @@ function render() {
     renderer.clear();
 
     //renderer.render( scene, camera );
-    anaglyphRenderer.render(scene, camera);
+    //anaglyphRenderer.render(scene, camera);
+    dofRenderer.render(scene, camera);
 
     if(pointerLocked) {
         renderer.clearDepth();
