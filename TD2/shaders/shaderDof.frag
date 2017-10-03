@@ -16,48 +16,50 @@ varying vec2 vUv;
 // TODO: distance to camera computation
 float distToFrag( float z_buffer ) {
     float z_ndc = 2.0 * z_buffer - 1.0; // On normalize entre [-1,1]
-    vec4 view = inverseProjectionMatrix * vec4(1.0, 1.0, z_ndc, 1.0);
-    return view.z;
+    float z_view = projectionMatrix2[3][2] / (z_ndc + projectionMatrix2[2][2]);
+    return z_view;
 }
 
 // TODO: circle of confusion computation
 float computeCoC( float fragDist, float focusDist ) {
-    float coc = (17.0 / (focusDist - 17.0)) * pupilDiameter * (abs(fragDist - focusDist) / fragDist);
+    float M = 17.0 / (focusDist - 17.0);
+    float coc = M * pupilDiameter * (abs(fragDist - focusDist) / fragDist);
 	return coc / pixelPitch;
 }
 
 // TODO: adaptive blur computation
 vec4 computeBlur( float radius ) {
-    float step_x = 1.0 / textureSize.x;
-    float step_y = 1.0 / textureSize.y;
-    float nb_step_x = radius / textureSize.x;
-    float nb_step_y = radius / textureSize.y;
+    int radius_pixels = int(radius / pixelPitch);
+    vec4 color = vec4(0);
+    int cpt = 0;
 
-    vec4 rgb = vec4(0.0,0.0,0.0,0.0);
-    float cpt = 0.0;
+    int i = -radius_pixels;
+    for (int loop1 = 0; loop1 <= 30; loop1++) {
+       if (i > radius_pixels) { break; }
 
-    float y = -radius;
-    for (int tmpi = 0; tmpi <= 100; tmpi++) {
-       if (y > radius) { break; }
+       int j = -radius_pixels;
+       for (int loop2 = 0; loop2 <= 30; loop2++) {
+          if (j > radius_pixels) { break; }
 
-       float x = -radius;
-       for (int tmpj = 0; tmpj <= 100; tmpj++) {
-          if (x > radius) { break; }
-          if (y < 0.0 || y > 1.0 || x < 0.0 || x > 1.0) { continue ; }
-          cpt++;
-          rgb += texture2D(colorMap, vec2(vUv.x + x, vUv.y + y));
-
-          x += step_x;
+          if (i*i + j*j <= radius_pixels*radius_pixels) {
+              vec2 coorUv = vUv + vec2(float(i), float(j)) / textureSize;
+              color.rgb += texture2D(colorMap, coorUv).rgb;
+              cpt++;
+          }
+          j++;
        }
-       y += step_y;
+       i++;
     }
-    rgb /= cpt;
-    return rgb;
+
+    color.rgb /= float(cpt);
+    return color;
 }
 
 void main() {
-	//gl_FragColor = texture2D( colorMap, vUv );
-    float fragDist = distToFrag(gl_FragColor.z);
+    float fragDist = distToFrag(texture2D(depthMap, vUv).r);
     float blurRadius = computeCoC(fragDist, focusDistance);
+
+    //gl_FragColor = vec4(fragDist/1000.0, 0.0, 0.0, 1.0);
+    //gl_FragColor = vec4(blurRadius * pixelPitch, 0.0, 0.0, 1.0);
     gl_FragColor = computeBlur(blurRadius);
 }
