@@ -1,42 +1,73 @@
-<!DOCTYPE html>
-<html lang="fr">
-	<head>
-		<title>RVRA TD3</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link rel="stylesheet" type="text/css" href="css/main.css">
-	</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AR-VR - Gouraud Jimmy</title>
 
-	<body>
-		<div id="info">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github-gist.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
 
-		</div>
-		<!-- external libraries -->
-		<script src="js/libs/three.min.js"></script>
-		<script src="js/libs/Detector.js"></script>
-		<script src="js/libs/stats.min.js"></script>
-		<script src='js/libs/dat.gui.min.js'></script>
-		<script src="js/libs/cv.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/toc.min.js"></script>
 
-		<!-- internal scripts -->
-		<script src="js/load.js"></script>
-		<script src="js/render.js"></script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+    </script>
 
-		<script>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
 
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+<body>
 
-			window.onload = onLoad;
+    <div id="toc"></div>
 
-		</script>
+    <div id="content">
+        <h1 style="text-align:center">TD3 - Suivi de l'observateur</h1>
 
+        Pour voir l'ensemble des fonctionnalités : <a href="TD3.html" target="_blank">cliquez ici !</a>
+        <br /><br />
 
-		<video id="video" width=640 height=480 autoplay="true" style="display:none;"></video>
+        <h2>1. Suivi d'un marqueur coloré</h2>
 
-		<div style="width: 100%; overflow: hidden;">
-    	<canvas id="canvas" style="width: 640px; height: 480px; float: left;"></canvas>
-			<div id="container" style="width: 640px; height: 480px; margin-left: 650px;"></div>
-		</div>
+        <h2>2. Stéréo et <i>tracking</i></h2>
 
-	</body>
-</html>
+        <h3>2.1. Calibrage de la caméra</h3>
+        <h3>2.2 Calcul de la profondeur</h3>
+
+    </div>
+
+    <script type="text/javascript">
+    $('#toc').toc({
+        'selectors': 'h2,h3,h4', //elements to use as headings
+        'container': 'body', //element to find all selectors in
+        'smoothScrolling': true, //enable or disable smooth scrolling on click
+        'prefix': 'toc', //prefix for anchor tags and class names
+        'onHighlight': function(el) {}, //called when a new section is highlighted
+        'highlightOnScroll': true, //add class to heading that is currently in focus
+        'highlightOffset': 100, //offset to trigger the next headline
+        'anchorName': function(i, heading, prefix) { //custom function for anchor name
+            return prefix+i;
+        },
+        'headerText': function(i, heading, $heading) { //custom function building the header-item text
+            return $heading.text();
+        },
+        'itemClass': function(i, heading, $heading, prefix) { // custom function for item class
+            return $heading[0].tagName.toLowerCase();
+        }
+    });
+    </script>
+
+</body>
