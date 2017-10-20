@@ -317,6 +317,7 @@ CV.findContours = function(imageSrc, binary){
   var width = imageSrc.width, height = imageSrc.height, contours = [],
       src, deltas, pos, pix, nbd, outer, hole, i, j;
 
+  // Create a binary image with a border of size 1 to 0.
   src = CV.binaryBorder(imageSrc, binary);
 
   deltas = CV.neighborhoodDeltas(width + 2);
@@ -408,6 +409,9 @@ CV.borderFollowing = function(src, pos, nbd, point, hole, deltas){
   return contour;
 };
 
+/* 1 1 1
+   1 0 1
+   1 1 1 */
 CV.neighborhood =
   [ [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1] ];
 
@@ -417,7 +421,12 @@ CV.neighborhoodDeltas = function(width){
   for (; i < len; ++ i){
     deltas[i] = CV.neighborhood[i][0] + (CV.neighborhood[i][1] * width);
   }
-
+  /*
+  deltas[0] = 1 + 0 * width = 0;
+  deltas[1] = 1 + -1 * width = 1-width;
+  deltas[2] = 0 + -1 * width = -width;
+  deltas[3] = -1 + -1 * width = -(1+width);
+  */
   return deltas.concat(deltas);
 };
 
@@ -714,6 +723,7 @@ CV.countNonZero = function(imageSrc, square){
 };
 
 CV.binaryBorder = function(imageSrc, dst){
+    // Create a binary image with a border of size 1 to 0.
   var src = imageSrc.data, height = imageSrc.height, width = imageSrc.width,
       posSrc = 0, posDst = 0, i, j;
 
