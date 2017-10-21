@@ -106,18 +106,16 @@ function animate() {
     imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
     if(menu.threshold) {
-        imageBinary = new CV.Image(canvas.width, canvas.height);
-
         // Fill imageDst & imageBinary
+        imageBinary = new CV.Image(canvas.width, canvas.height);
         if (menu.hsv) {
             thresholdHSV(imageData, imageDst, imageBinary, menu.colorRGB, menu.threshold_value, [menu.minSV, menu.maxSV]);
         } else {
             thresholdRGB(imageData, imageDst, imageBinary, menu.colorRGB, menu.threshold_value);
         }
 
-        var binary = new CV.Image(imageData.width, imageData.height);
-        var contours = CV.findContours(imageBinary, binary);
-        extractInterestZone(contours);
+        // Find contours & draw boundary box around the biggest contour
+        extractInterestZone(imageBinary);
     } else {
         imageDst.data.set(imageData.data);
     }
@@ -135,19 +133,22 @@ function render() {
   stats.update();
 }
 
-function extractInterestZone(contours) {
+function extractInterestZone(imageBinary) {
+    // Find contours
+    var binary = new CV.Image(imageData.width, imageData.height);
+    var contours = CV.findContours(imageBinary, binary);
+    if (contours.length == 0) { return; }
+
     // Find biggest Contour
-    var biggestPerimeter = -1;
-    var biggestContour = -1;
+    var biggestPerimeter = -1,
+        biggestContour = -1;
     for (var i = 0; i < contours.length; i++) {
         var perimeter = CV.perimeter(contours[i]);
         if (biggestPerimeter < perimeter) {
-            biggestPerimeter = CV.perimeter(contours[i]);
+            biggestPerimeter = perimeter;
             biggestContour = contours[i];
         }
     }
-
-    if (biggestPerimeter == -1) { return; }
 
     // Find bounding box
     var maxX = 0, minX = canvas.width,
@@ -166,16 +167,12 @@ function extractInterestZone(contours) {
     centerY = y1 + (y2 - y1) / 2;
 
     if (!tobi) {
-        // Center
-        context.fillStyle = "#ff0000";
-        context.fillRect(centerX-2, centerY-2, 4, 4);
-
-        // Corners
-        context.fillStyle = "#0000ff";
-        context.fillRect(x1-2, y1-2, 4, 4);
-        context.fillRect(x2-2, y1-2, 4, 4);
-        context.fillRect(x1-2, y2-2, 4, 4);
-        context.fillRect(x2-2, y2-2, 4, 4);
+        // Circle
+        context.strokeStyle = "#00ff00";
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        context.stroke();
+        context.closePath();
 
         // 2D Bounding box
         context.strokeStyle = "#ff00ff";
@@ -184,12 +181,9 @@ function extractInterestZone(contours) {
         context.stroke();
         context.closePath();
 
-        // Circle
-        context.strokeStyle = "#00ff00";
-        context.beginPath();
-        context.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        context.stroke();
-        context.closePath();
+        // Center
+        context.fillStyle = "#ff0000";
+        context.fillRect(centerX-2, centerY-2, 4, 4);
     } else {
 		var radiusBall = 20;
 		context.beginPath();
@@ -298,7 +292,7 @@ function rgb2hsv (r,g,b) {
 function mouseClick(event) {
     switch (event.button) {
         case 0:
-            if(event.clientX <= canvas.width && event.clientY <= canvas.height) {
+            if(event.clientX < canvas.width && event.clientY < canvas.height) {
                 var color = context.getImageData(event.clientX, event.clientY, 1, 1).data;
                 menu.colorRGB = Array.from(color);
                 break;
