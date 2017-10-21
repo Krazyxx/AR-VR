@@ -3,9 +3,29 @@ var canvas, context, imageData, imageDst;
 var renderer;
 var tobi = false;
 
-var focal = {x: 743.89066776986397, y: 743.89066776986397};
-var optical_center = {x: 319.50000000000000, y: 239.50000000000000};
-var size_postit = 77; // 7.7cm
+
+var distFocal = 743.89;
+var opticalCenter = {x: 319.5, y: 239.5};
+var sizeReal = 77; // 7.7cm
+var radiusReal = 54.45; // Math.sqrt(77*77 + 77*77) / 2 = 54.45
+
+// OC = optical center
+// TC = target center
+function computeDepth(distFocal, OC, TC, radiusTarget, radiusReal) {
+    // Step 1 - Compute the distance to the target center
+    var distOCtoTC = Math.sqrt((OC.x - TC.x)*(OC.x - TC.x) + (OC.y - TC.y)*(OC.y - TC.y));
+    var distTC = Math.sqrt(distFocal * distFocal + distOCtoTC * distOCtoTC);
+
+    // Step 2 - Compute the distance to the real center
+    radiusReal = radiusReal / displayParameters.pixelPitch(); // Conversion du radius réel en pixel;
+    var distRC = (distTC * radiusReal) / radiusTarget;
+
+    // Step 3 - Compute the depth
+    var depth = (distRC * distFocal) / distTC;
+
+    return depth;
+}
+
 
 var Menu = function() {
   this.threshold = true;
@@ -195,6 +215,11 @@ function extractInterestZone(contours) {
 		context.fillRect(centerX-(radiusBall*1.5)/2, centerY, radiusBall*1.5, radiusBall*3);
 		context.closePath();
     }
+
+    var targetCenter = {x: centerX, y: centerY};
+    var radiusTarget = radius;
+    var depth = computeDepth(distFocal, opticalCenter, targetCenter, radiusTarget, radiusReal);
+    console.log("depth = " + depth * displayParameters.pixelPitch()/10 + " cm");
 }
 
 function thresholdRGB(imageSrc, imageDst, imageBinary, threshold, tolerance) {
