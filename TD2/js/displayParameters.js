@@ -16,7 +16,7 @@ var displayParameters = {
     pixelPitch: function() {
         var screenResolutionHeight = this.screenResolutionWidth / this.aspectRatio;
         var screenResolutionDiagonal = Math.sqrt(this.screenResolutionWidth * this.screenResolutionWidth + screenResolutionHeight * screenResolutionHeight);
-        return screenResolutionDiagonal / this.screenDiagonal;
+        return this.screenDiagonal / screenResolutionDiagonal;
     },
 
     // physical display width and height -- in mm
