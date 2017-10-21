@@ -3,14 +3,12 @@ var canvas, context, imageData, imageDst;
 var renderer;
 var tobi = false;
 
-
-var distFocal = 743.89;
+var distFocal = 729.2;
 var opticalCenter = {x: 319.5, y: 239.5};
 var sizeReal = 77; // 7.7cm
 var radiusReal = 54.45; // Math.sqrt(77*77 + 77*77) / 2 = 54.45
 
-// OC = optical center
-// TC = target center
+// OC = optical center ; TC = target center ; RC = real center
 function computeDepth(distFocal, OC, TC, radiusTarget, radiusReal) {
     // Step 1 - Compute the distance to the target center
     var distOCtoTC = Math.sqrt((OC.x - TC.x)*(OC.x - TC.x) + (OC.y - TC.y)*(OC.y - TC.y));

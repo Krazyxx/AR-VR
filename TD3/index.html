@@ -248,16 +248,82 @@ function thresholdHSV(imageSrc, imageDst, imageBinary, threshold, toleranceH, to
 }            </code></pre>
         </div>
 
+        Ci-dessous, une capture d'écran lors de la suivi d'un post-it vert en HSV.
+        <figure>
+            <center>
+                <img src="image/1. Followed by a post-it.png" width="600" alt="Compute depth"/>
+                <figcaption>Followed by a post-it in HSV</figcaption>
+            </center>
+        </figure>
+
         <h2>2. Stéréo et <i>tracking</i></h2>
 
         <h3>2.1. Calibrage de la caméra</h3>
+        La calibration de la caméra consiste à retrouver les transformations qu'un point dans
+        l'espace subit pour être projeté sur l'image. Ici, nous nous intéresserons seulement
+        au cas particulier du modèle de caméra tête d'épingle (sténopé ou <i>pinhole camera</i>),
+        c'est-à-dire sans objectif et avec une simple ouverture (<i>aperture</i>).
+        <br /><br />
 
-        Pour calibrer une caméra, on utilise un...
+        Le calibrage (ou étalonnage) d'une caméra permet de faire la relation entre la taille des
+        objets affichés à la caméra (en pixel) et leur taille réel (en millimètre par exemple).
+        Le calibrage permet aussi de connaitre les distorsions de la caméra et ainsi pouvoir les
+        compenser. <br />
+        Pour pouvoir calibrer une caméra, on a besoin d'un modèle régulier, comme par exemple un damier,
+        dont on connait les dimensions :
+        <figure>
+            <center>
+                <img src="image/2.1 calibration.jpg" width="500" alt="Compute depth"/>
+                <figcaption>Checkerboard used for calibrating a camera</figcaption>
+            </center>
+        </figure>
+
+        On va ensuite prendre des mesures afin de connaître la matrice de transformations et les
+        coefficient de distorsions :
+
+        <div class="highlight">
+            <pre><code class="xml hljs">&lt;Camera_Matrix type_id="opencv-matrix"&gt;
+    &lt;rows&gt;3&lt;/rows&gt;
+    &lt;cols&gt;3&lt;/cols&gt;
+    &lt;dt&gt;d&lt;/dt&gt;
+    &lt;data&gt;
+        7.2918546495777105e+02 0. 3.1950000000000000e+02
+        0. 7.2918546495777105e+02 2.3950000000000000e+02
+        0. 0. 1.
+    &lt;/data&gt;
+&lt;/Camera_Matrix&gt;
+
+&lt;Distortion_Coefficients type_id="opencv-matrix"&gt;
+    &lt;rows&gt;5&lt;/rows&gt;
+    &lt;cols&gt;1&lt;/cols&gt;
+    &lt;dt&gt;d&lt;/dt&gt;
+    &lt;data&gt;
+        -9.6150262629603425e-02 1.3750862866443919e-01 0. 0. -8.7059041917967345e-02
+    &lt;/data&gt;
+&lt;/Distortion_Coefficients&gt;</code></pre>
+        </div>
+
+        Ainsi, la matrice de transformation de la caméra et les coefficients de distorsion sont :
+        <div class="highlight">
+            <pre><code class="js javascript">cam_matrix = [729.2    0    319.5
+                0    729.2  239.5
+                0      0      1   ];
+distortion_coeff = [ -961.5  0.1375  0  0  -0.0871 ]; </code></pre>
+        </div>
+
+        Étant donné que pour la majorité des webcams les distorsions sont négligeables nous n'utilisons
+        que la matrice de transformation de la caméra à laquelle nous extirpons la distance focal et les
+        coordonnées du centre optique :
+        <div class="highlight">
+            <pre><code class="js javascript">var distFocal = 729.2;
+var opticalCenter = {x: 319.5, y: 239.5}; </code></pre>
+        </div>
+
         <h3>2.2 Calcul de la profondeur</h3>
         On veut calculer la profondeur, c'est-à-dire la distance réelle à laquelle se trouve le post-it.
         Nous avons besoin de la distance focal, du centre optique (OC), du centre de la cible (TC), du radius
-        de la cible (récupérer à l'aide du centre englobant) et du radius du post-it (calculer à partir de la
-        taille du post-it).
+        de la cible (récupéré à l'aide du cercle englobant) et du radius du post-it (c'est-à-dire la
+        demi-diagonale)
         <figure>
             <center>
                 <img src="image/2.2 Compute depth.png" width="700" alt="Compute depth"/>
@@ -265,7 +331,7 @@ function thresholdHSV(imageSrc, imageDst, imageBinary, threshold, toleranceH, to
             </center>
         </figure>
 
-Ainsi, pour calculer la profondeur :
+        Ainsi, pour calculer la profondeur :
         <div class="highlight">
             <pre><code class="js javascript">function computeDepth(distFocal, OC, TC, radiusTarget, radiusReal) {
     // Step 1 - Compute the distance to the target center
@@ -283,7 +349,8 @@ Ainsi, pour calculer la profondeur :
 }            </code></pre>
         </div>
 
-    Pour convertir la profondeur en mm, il suffit de la multiplier par le pixelPitch :
+    Pour convertir la profondeur en mm, il suffit de la multiplier par le
+    <code class="js javascript">pixelPitch</code> :
     <div class="highlight">
         <pre><code class="js javascript">// conversion of depth (in pixel) to mm
 depth = depth * displayParameters.pixelPitch();
