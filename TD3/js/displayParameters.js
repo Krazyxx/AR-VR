@@ -2,9 +2,9 @@ var displayParameters = {
 
     // parameters for stereo rendering
     // physical screen diagonal -- in mm
-    screenDiagonal: 550, //685.8,
-    screenResolutionWidth: 1920, //2560,
-    aspectRatio: 16 / 9,
+    screenDiagonal: 390,//550, //685.8,
+    screenResolutionWidth: 1280,// 1920, //2560,
+    aspectRatio: 1280 / 960, // 16 / 9,
 
     // inter pupillar distance -- in mm
     ipd: 64,
@@ -23,6 +23,6 @@ var displayParameters = {
     screenSize: function() {
         var pixelPitch = this.pixelPitch();
         var screenResolutionHeight =  this.screenResolutionWidth / this.aspectRatio;
-        return new THREE.Vector2(this.screenResolutionWidth / pixelPitch, screenResolutionHeight / pixelPitch);
+        return new THREE.Vector2(this.screenResolutionWidth * pixelPitch, screenResolutionHeight * pixelPitch);
     }
 };

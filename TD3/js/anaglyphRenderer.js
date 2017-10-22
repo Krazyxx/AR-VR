@@ -18,6 +18,8 @@ function AnaglyphRenderer ( renderer ) {
         var w = displayParameters.screenSize().x; // width
         var h = displayParameters.screenSize().y; // height
         var ipd = displayParameters.ipd;
+        console.log("w = " + w);
+        console.log("h = " + h);
 
         var top = znear * (h / (2.0 * d));
         var bottom = - top;

@@ -128,8 +128,9 @@ function render() {
   renderer.render(scene, camera);
 
   renderer2.clear();
-  //renderer2.render(scene2, camera2);
-  anaglyphRenderer.render(scene2, camera2);
+  renderer2.render(scene2, camera2);
+  //anaglyphRenderer.render(scene2, camera2);
+  
   stats.update();
 }
 
