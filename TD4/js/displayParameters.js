@@ -2,9 +2,9 @@ var displayParameters = {
 
   // parameters for stereo rendering
   // physical screen diagonal -- in mm
-  screenDiagonal: 337.82,
-  screenResolutionWidth: 1440,
-  aspectRatio: 1.6,
+  screenDiagonal: 132, //337.82,
+  screenResolutionWidth: 1920, // 1440,
+  aspectRatio: 1920 / 1080, //1.6,
 
   // inter pupillar distance -- in mm
   ipd: 64,
@@ -33,13 +33,12 @@ var displayParameters = {
 
   // distance between viewer (=lenses, i.e. no eye relief) and virtual image of screen
   distanceScreenViewer: function() {
-    // TODO
-    return 500;
+      return Math.abs(1 / ((1 / this.lensesFocalLength) - (1 / this.distanceScreenLenses)));
   },
 
   // lens magnification
   lensMagnification: function() {
-    // TODO
+      return Math.abs(this.lensesFocalLength /  (this.lensesFocalLength - this.distanceScreenLenses));
   }
 
 };
