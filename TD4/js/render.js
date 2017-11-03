@@ -4,7 +4,7 @@ var stereoRenderer;
 
 var cameraOrtho, sceneOrtho;
 
-var guiObj = { K1: 0.1, K2: 0.1 };
+var guiObj = { K1: -0.4, K2: -0.4 };
 
 var clock;
 
@@ -17,6 +17,7 @@ var pointerLocked = false;
 
 var velocity = new THREE.Vector3(0,0,0);
 
+var cube_tnt, move_tnt;
 function init() {
 
   clock = new THREE.Clock();
@@ -28,6 +29,8 @@ function init() {
 
   var fov = THREE.Math.radToDeg(Math.atan( displayParameters.screenSize().y/ displayParameters.distanceScreenViewer()));
   camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 1, 100000 );
+
+  camera.position.set(0, 100, 1000);
 
   cameraOrtho = new THREE.OrthographicCamera( - window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, - window.innerHeight / 2, 1, 10 );
   cameraOrtho.position.z = 10;
@@ -50,7 +53,8 @@ function init() {
   var mat_stonebrick = new THREE.MeshBasicMaterial( { map: stonebrick } );
   var mat_stonebrick_mossy = new THREE.MeshBasicMaterial( { map: stonebrick_mossy } );
 
-  var cube_tnt = new THREE.Mesh( geometry, [mat_tnt1, mat_tnt1, mat_tnt2, mat_tnt2, mat_tnt1, mat_tnt1] );
+  move_tnt = 10;
+  cube_tnt = new THREE.Mesh( geometry, [mat_tnt1, mat_tnt1, mat_tnt2, mat_tnt2, mat_tnt1, mat_tnt1] );
   cube_tnt.position.y = 100;
   cube_tnt.position.z = - displayParameters.distanceScreenViewer();
   var cube_sand = new THREE.Mesh( geometry, mat_sand );
@@ -114,9 +118,12 @@ function init() {
   pickingTexture.texture.minFilter = THREE.LinearFilter;
 
   // Camera controler
-  controls = new THREE.PointerLockControls( camera, renderer.domElement );
-  scene.add( controls.getObject() );
-  controls.enabled = true;
+  // controls = new THREE.PointerLockControls( camera, renderer.domElement );
+  // scene.add( controls.getObject() );
+  // controls.enabled = true;
+
+  controls = new THREE.DeviceOrientationControls( camera );
+
 
   var onKeyDown = function ( event ) {
 
@@ -180,12 +187,12 @@ function init() {
 
   var gui = new dat.GUI();
   var controller = gui.add( guiObj, 'K1' );
-  controller.onChange(function(value) { 
-    stereoRenderer.setK1(value); 
+  controller.onChange(function(value) {
+    stereoRenderer.setK1(value);
   } );
   controller = gui.add( guiObj, 'K2' );
-  controller.onChange(function(value) { 
-    stereoRenderer.setK2(value); 
+  controller.onChange(function(value) {
+    stereoRenderer.setK2(value);
   } );
 
   // stats
@@ -196,7 +203,6 @@ function init() {
   window.addEventListener( 'resize', onWindowResize, false );
 
   window.addEventListener( 'mousedown', pick, false );
-
 }
 
 function applyFaceColor( geom, color ) {
@@ -224,6 +230,12 @@ function onWindowResize() {
 }
 
 function animate() {
+
+    // animate the cube_tnt;
+    cube_tnt.position.y += move_tnt;
+    if (cube_tnt.position.y < 100 || cube_tnt.position.y > 500) {
+        move_tnt = -move_tnt;
+    }
 
   requestAnimationFrame( animate );
 
@@ -265,7 +277,9 @@ function pick(event) {
 }
 
 function render() {
+    camera.rotation.set(0, 0, 0);
 
+/*
   var delta = clock.getDelta();
 
   velocity.x -= velocity.x * 100.0 * delta;
@@ -279,16 +293,19 @@ function render() {
 
   controls.getObject().translateX( velocity.x * delta );
   controls.getObject().translateZ( velocity.z * delta );
+  */
 
   renderer.clear();
-
   stereoRenderer.render( scene, camera );
+  controls.update();
 
+/*
   if(pointerLocked) {
     renderer.clearDepth();
     renderer.render( sceneOrtho, cameraOrtho );
   }
+*/
+
 
   stats.update();
-
 }

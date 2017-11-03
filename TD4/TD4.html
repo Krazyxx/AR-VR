@@ -26,19 +26,19 @@
 
 		<script>
 
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-			testExp = new RegExp('Android|webOS|iPhone|iPad|' + 'BlackBerry|Windows Phone|'  + 'Opera Mini|IEMobile|Mobile' , 'i');
-  
-  		if (testExp.test(navigator.userAgent)) {
-				pointerLocked = true;
-			} else {
-				lockPointer();
-			}
+		testExp = new RegExp('Android|webOS|iPhone|iPad|' + 'BlackBerry|Windows Phone|'  + 'Opera Mini|IEMobile|Mobile' , 'i');
 
-			init();
+		if (testExp.test(navigator.userAgent)) {
+			pointerLocked = true;
+		} else {
+			lockPointer();
+		}
 
-			animate();
+		init();
+
+		animate();
 
 		</script>
 
