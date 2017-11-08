@@ -277,8 +277,6 @@ function pick(event) {
 }
 
 function render() {
-    camera.rotation.set(0, 0, 0);
-
 /*
   var delta = clock.getDelta();
 
