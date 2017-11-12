@@ -121,7 +121,6 @@ function init() {
   // controls = new THREE.PointerLockControls( camera, renderer.domElement );
   // scene.add( controls.getObject() );
   // controls.enabled = true;
-
   controls = new THREE.DeviceOrientationControls( camera );
 
 

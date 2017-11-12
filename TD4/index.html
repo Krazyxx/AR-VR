@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>AR-VR - Gouraud Jimmy</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github-gist.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="../js/toc.min.js"></script>
+
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+    </script>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <div id="toc"></div>
+
+    <div id="content">
+        <h1 style="text-align:center">TD4 - Visiocasque "en carton"</h1>
+
+        Pour voir l'ensemble des fonctionnalités du TD4 : <a href="TD4.html" target="_blank">cliquez ici !</a>
+        <br /><br />
+
+        <h2>1. Rendu stéréo pour le visiocasque</h2>
+        A l'aide des caractérisque données (distance focale des lentilles, diamètre des lentilles, etc.), nous avons
+        implémenté les fonctions <code class="inline-code">distanceScreenViewer</code> et <code class="inline-code">lensMagnification</code>
+        dans le fichier <tt>js/displayParameters</tt>, sans oublié de mettre à jour les dimensions physique de l'écran
+        de notre <i>smartphone</i>
+        <div class="highlight">
+        <pre><code class="js javascript">var displayParameters = {
+    screenDiagonal: 132,
+    screenResolutionWidth: 1920,
+    aspectRatio: 1920 / 1080,
+
+    // ...
+
+    // distance between viewer (=lenses, i.e. no eye relief) and virtual image of screen
+    distanceScreenViewer: function() {
+        return Math.abs(1 / ((1 / this.lensesFocalLength) - (1 / this.distanceScreenLenses)));
+    },
+
+    // lens magnification
+    lensMagnification: function() {
+        return Math.abs(this.lensesFocalLength /  (this.lensesFocalLength - this.distanceScreenLenses));
+    }
+};</code></pre>
+        </div>
+
+
+        Ensuite, nous avons implémenté la méthode <code class="inline-code">update()</code> qui calcule les matrices
+        de vue et de projection pour chaque oeil.
+
+        <div class="highlight">
+            <pre><code class="js javascript">this.update = function ( camera ) {
+    this.cameraLeft = camera;
+    this.cameraRight = camera;
+
+    var znear = camera.near;
+    var zfar = camera.far;
+
+    var wPrime = displayParameters.screenSize().x; // width phone
+    var hPrime = displayParameters.screenSize().y; // height phone
+    var dPrime = displayParameters.distanceScreenLenses;
+    var ipd = displayParameters.ipd;
+    var d = displayParameters.distanceScreenViewer();
+    var dEye = displayParameters.eyeRelief;
+    var M = displayParameters.lensMagnification();
+
+    var h = M * hPrime;
+
+    var top = znear * (h / (2.0 * (d + dEye)));
+    var bottom = - znear * (h / (2.0 * (d + dEye)));
+
+    var w1 = M * (ipd / 2.0);
+    var w2 = M * ((wPrime - ipd) / 2.0);
+
+    // left eye
+    var L_right = znear * (w1 / (d + dEye));
+    var L_left = - znear * (w2 / (d + dEye));
+    var translateLeft = new THREE.Matrix4();
+    translateLeft.makeTranslation(-displayParameters.ipd/2.0, 0, 0);
+    this.cameraLeft.matrixWorld.multiplyMatrices(this.cameraLeft.matrixWorld, translateLeft);
+    this.cameraLeft.projectionMatrix.makePerspective(L_left, L_right, top, bottom, znear, zfar);
+
+    // right eye
+    var R_right = - L_left;
+    var R_left = - L_right;
+    var translateRight = new THREE.Matrix4();
+    translateRight.makeTranslation(displayParameters.ipd/2.0, 0, 0);
+    this.cameraRight.matrixWorld.multiplyMatrices(this.cameraRight.matrixWorld, translateRight);
+    this.cameraRight.projectionMatrix.makePerspective(R_left, R_right, top, bottom, znear, zfar);
+}</code></pre>
+        </div>
+
+        Nous avons ensuite fait en sorte que le rendu pour l'oeil gauche (respectivement droit)
+        s'effectue à la moitié gauche (respectivement droite) de la fenêtre à l'aide de la méthode
+        <code class="inline-code">setViewport</code> du <code class="inline-code">WebGLRenderer</code>.
+
+        <div class="highlight">
+        <pre><code class="js javascript">this.render = function ( scene, camera ) {
+    // ...
+
+    // Left eye
+    renderer.setViewport(0,0,window.innerWidth / 2.0, window.innerHeight);
+
+    // Right eye
+    renderer.setViewport(window.innerWidth / 2.0, 0, window.innerWidth / 2.0, window.innerHeight);
+}</code></pre>
+        </div>
+
+        <h2>2. Correction des distorsions</h2>
+
+        Le problème des lentilles est qu'elles introduisent des distorsions géométriques et des aberrations
+        chromatiques dans le cahmp de rayons lumineux qui les traverses. Il faut donc corriger ses distorsions.
+        On a donc compléter le fragment shader <tt>shaderUnwarp.frag</tt> afin de calculer l'image pré-déformée
+        à afficher à l'écran.
+        <div>
+        <pre><code class="js javascript">void main() {
+    float xd = vUv[0];
+    float yd = vUv[1];
+
+    float xc = centerCoordinate[0];
+    float yc = centerCoordinate[1];
+
+    float K1 = K[0];
+    float K2 = K[1];
+
+    // r2 = r squared
+    vec2 v = vec2(xd - xc, yd - yc);
+    float r2 = dot(v,v); // scalar product
+
+    float xu = xc + (xd - xc)/(1.0 + K1*r2 + K2*r2*r2);
+    float yu = yc + (yd - yc)/(1.0 + K1*r2 + K2*r2*r2);
+
+    if (0.0 < xu && xu < 1.0 && 0.0 < yu && yu < 1.0) {
+        gl_FragColor = texture2D(colorMap, vec2(xu, yu));
+    } else {
+        gl_FragColor = vec4(0, 0, 0, 1.0);
+    }
+}</code></pre>
+        </div>
+
+        <h2>3. Suivi des mouvements de l'observateur</h2>
+        Nous avons ensuite remplacer le controleur <code class="inline-code">THREE.PointerLockControls</code>
+        par le contrôleur <code class="inline-code">THREE.DeviceOrientationControls</code> et modifier la fonction
+        <code class="inline-code">render</code> en conséquence.
+
+        <div>
+        <pre><code class="js javascript">function init() {
+    //...
+
+    // Camera controler
+    controls = new THREE.DeviceOrientationControls( camera );
+}
+
+function render() {
+
+    renderer.clear();
+    stereoRenderer.render( scene, camera );
+    controls.update();
+
+    stats.update();
+}</code></pre>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+    $('#toc').toc({
+        'selectors': 'h2,h3,h4', //elements to use as headings
+        'container': 'body', //element to find all selectors in
+        'smoothScrolling': true, //enable or disable smooth scrolling on click
+        'prefix': 'toc', //prefix for anchor tags and class names
+        'onHighlight': function(el) {}, //called when a new section is highlighted
+        'highlightOnScroll': true, //add class to heading that is currently in focus
+        'highlightOffset': 100, //offset to trigger the next headline
+        'anchorName': function(i, heading, prefix) { //custom function for anchor name
+            return prefix+i;
+        },
+        'headerText': function(i, heading, $heading) { //custom function building the header-item text
+            return $heading.text();
+        },
+        'itemClass': function(i, heading, $heading, prefix) { // custom function for item class
+            return $heading[0].tagName.toLowerCase();
+        }
+    });
+    </script>
+
+</body>
