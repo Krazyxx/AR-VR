@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Projet d'ARVR</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github-gist.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="js/toc.min.js"></script>
+
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	MathJax.Hub.Config({
+	tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+	}
+	});
+	MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+		     all[i].SourceElement().parentNode.className += ' has-jax';
+		     }
+		     });
+    </script>
+
+    <link rel="stylesheet" href="css/style.css">
+
+  </head>
+
+  <body>
+
+    <div id="toc"></div>
+
+    <div id="content">
+
+      <h1 style="text-align:center">Projet d'ARVR</h1>
+      <h2>Choix des technologies</h2>
+		<p>Dans le cadre de l'UE de réalité augmentée/virtuelle, nous avions pour but de construire un application dont les interactions avec celles ci se faisaient via des
+			dispostifs de <b>RVRA</b>.
+			Pour construire une telle application, nous avons choisi d'utiliser un <b><a href="https://www.leapmotion.com/">LeapMotion</a></b> et un <b><a href="https://www.oculus.com/rift/">Occulus Rift</a></b>. Pour accélérer le prototypage nous avons aussi utilisé un moteur de jeu. Nous avons choisi <b><a href="https://www.unrealengine.com/en-US/what-is-unreal-engine-4">Unreal Engine 4 (4.18.1)</a></b>.</p>
+      <figure>
+          <center>
+              <table>
+                  <tbody>
+                      <tr>
+                          <td>
+                              <img src="images/leapmotion_logo.png" width="170"/>
+                              <figcaption>Leap Motion</figcaption>
+                          </td>
+                          <td>
+                              <img src="images/logo_oculus.png" width="300"/>
+                              <figcaption>Occulus</figcaption>
+                          </td>
+                      </tr>
+                  </tbody>
+              </table>
+          </center>
+      </figure>
+
+      <figure>
+            <center>
+                <img src="images/unreal_logo.png" width="300"/>
+                <figcaption>Unreal Engine</figcaption>
+            </center>
+     </figure>
+
+		<p>Toujours dans l'optique d'un prototypage rapide, nous n'avions pas le temps de developper une interface permettant à Unreal Engine de communiquer avec l'API du LeapMotion. Nous avons donc
+			utiliser un plugin (non-officiel). De plus, nous avons aussi utilisé le système Blueprint qui est un système de programmation visuel comme Scratch propre à Unreal.
+			<p>Voici un rapide aperçu de ce que nous a permi de faire ce systeme:</p>
+      <figure>
+          <center>
+                <img src="images/blueprintExample.png" width="800"/>
+                <figcaption>Exemple de blueprint (Unreal Engine)</figcaption>
+          </center>
+      </figure>
+
+      <h2>Choix du projet</h2>
+
+	<p> Une fois les technologies que nous allions utiliser bien définies, il restait à savoir quel type de projet nous souhaitions construire.
+      N'ayant jamais eu l'occasion de manipuler le LeapMotion, nous avons décidé de créer une application bac à sable que nous avons appelé avec beaucoup d'originalité <b>SandBox</b>.
+      L'objectif était de pouvoir explorer au maximum les possibilités offertes par ces technologies et donc d'ajouter le plus d'interactions
+		différentes possible. Ce que nous souhaitions, à la fin du projet, c'est d'avoir une vision claire des possibilités mais aussi des freins offerts par de telles technologies.</p>
+
+      <h2>Projet</h2>
+	<p>L'idée principale sur laquelle nous étions parti était que l'utilisateur devait pouvoir contrôler le monde et donc, qui dit contrôler dit pouvoir se déplacer, poser des objets, en détruire certains, etc.
+		Cette idée étant assez vaste et offrant beaucoup (trop) de possibilités, nous nous sommmes limités pour pouvoir prendre le temps de bien gérer nos interactions. C'est ainsi que nous avons l'idée de
+		déguiser notre application sous la forme d'un mini-jeu (le terme de jeu au sens technique n'est pas approrié car il n'y a pas de <i>game loop</i>) ou au lieu de simplement poser des objets dans le monde
+		l'utilisateur pourrait lancer ces objets sur des cibles aléatoirement placées dans celui ci.</p>
+      <p>Ci-dessous vous trouverez la liste des différentes interactions possibles :</p>
+      <figure>
+          <center>
+                <img src="images/interactions.png" width="800"/>
+                <figcaption>Interactions possibles</figcaption>
+          </center>
+      </figure>
+
+      Le but de notre mini-jeu est donc de viser et détruire des cibles. Il y a deux types de cibles, les cibles ennemies (elles ont un look très aggresif qui peuvent heurter la sensibilité des joueurs) et les cibles alliées (on aurai presque envie de leur faire des calins).
+      <br />
+      <b>Note</b> : Toute ressemblance avec des personnes ou des situations réelles ayant existé serait purement
+      fortuite et totalement indépendante de notre volonté.
+      <br />
+      Pour détruire ces cibles, il faut ouvrir votre inventaire dans lequel est stocké une boule de feu, une boule
+      d'eau et une chaise (allez savoir pourquoi..).
+      Aprés avoir sélectionné un de ces 3 objets, vous pouvez le lancer. L'effet résultant de ce lancé varie en fonction la cible que vous avez touché :
+      <ol>
+          <li> Si vous lancez une boule de feu
+              <ul>
+                  <li> sur une cible alliée, aie la boulette, vous devez vous dépêchez d'éteindre ce carnage ! Votre seule option est de lancer une boule d'eau pour éteindre le feu.</li>
+                  <li> sur une cible ennemie, patienter quelques instants, prenez un café, mettez vous à l'aise et observez le feu faire son travail et détruire la cible ennemie.</li>
+              </ul>
+          </li>
+          <li> Si vous lancez une boule d'eau
+              <ul>
+                  <li> sur une cible alliée, cela ne sert à rien : vous devriez l'utilisez pour éteindre un feu involontaire.</li>
+                  <li> sur une cible ennemie, ça ne fait pas de mal et c'est sympa ! Attention toutefois à ne pas éteindre malencontreusement un feu que vous auriez volontairement déclenché !</li>
+              </ul>
+          </li>
+          <li> Si vous voulez vous défoulez et que vous avez choisit la chaise
+              <ul>
+                  <li> sur une cible alliée, cela devrait entrainer une pénalité mais elle n'a pas encore été développé. Elle pourrait faire l'objet d'une mise-à-jour ! </li>
+                  <li> sur une cible ennemie, cela devrait entrainer un super méga bonus de la mort qui tue, mais les ambitions des développeurs était un peu trop élevé. </li>
+              </ul>
+          </li>
+      </ol>
+
+    <figure>
+        <center>
+            <img src="images/result.png" width="800"/>
+            <figcaption>Résultats</figcaption>
+        </center>
+    </figure>
+
+
+    <h2>Problèmes rencontrés et solutions apportées</h2>
+    <ul>
+        <li>
+            <b>SDK LeapMotion pour Unreal Engine 4 incomplet</b><br/>
+			<b>Problème</b>: Comme expliqué au début, nous n'avons pas pu nous permettre d'implémenter une interface pour communiquer avec l'API LeapMoion
+			et de ce fais nous avons dû utiliser un plugin.
+			Le plugin est encore en developpement et il en a résulté que certains mouvements ne fonctionnaient pas ou qu'à moitié (beaucoup de valeur à <i>hardcod</i>er pour obtenir un bon résultat).
+			De plus, le degré de liberté offert par le plugin est assez limité, même s'il automatise et facilite beaucoup de chose.<br>
+            <b>Solution</b>: Nous n'avons pas tout le temps pu utiliser les événements fournis par le plugin (déclenchement parfois trop hasardeux et non maîtrisé) et nous avons donc dû
+			"coder" ces mouvements à la main. Par exemple, concernant la rotation de la main pour ouvrir l'inventaire nous avons implémenté un événement maison qui vérifie en permanence la position de la main,
+			sa position il y a x secondes, la valeur des normals à ces deux instants et qui nous permet donc de savoir quand est-ce que la main a été retournée.<br>
+        </li>
+        <li>
+            <b>Oculus Rift + LeapMotion + UE4 → Crash</b><br />
+            <b>Problème</b>: Pour une raison encore inconnue à ce jour, il nous a été impossible d’utiliser correctement les trois technologies en même temps.<br>
+            <b>Solution</b>: Pour pallier à ce problème nous avons arrêté d’utiliser l'Oculus Rift ce qui est dommage car l'immersion est de suite moins interessante.
+        </li>
+        <li>
+            <b>Détection du LeapMotion assez hasardeuse parfois</b><br />
+            <b>Problème</b>: Les mains disparaissent/se téléportent, le visage est parfois considéré comme une main, les occlusions (entre les mains ou les doigts) causent parfois quelques soucis. <br>
+			<b>Solution</b>: Pour pallier à ce problème, nous avons ajouté des seuils de tolérance assez strict à certains de nos mouvements. Ces problèmes sont aussi beaucoup moins présent voir totalement absent lors de l’utilisation avec du LeapMotion avec un Oculus Rift. Puisque nous subissions des crashs en utilisant ces deux technologies en même temps, nous aurions juste aimé pouvoir forcer l'utilisation du LeapMotion en
+			mode casque, en scotchant ce dernier à des lunettes par exemple, mais le plugin Unreal détectait automatiquement si un Occulus était branché ou non et nous n'avons pas réussi à forcer le plugin à fonctionner en mode casque. Ainsi si nous plaçons le LeapMotion sur des lunettes, les mains apparaissaient retournées et renversées en jeu car le LeapMotion considéré qu'il était posé à plat sur une table.
+        </li>
+    </ul>
+
+    <h2>Améliorations</h2>
+
+    Notre projet peut facilement être améliorer en rajoutant par exemple de nouvelles interactions telle que
+    le déplacement dans la scène, la possibilité de déplacer/poser un objet, etc.
+    <br />
+    Il serait aussi intéressant d'ajouter un tutoriel expliquant les différentes interactions possibles au lancement de l'applcation.
+    <br />
+    Une meilleure gestion des mouvements permettrait une plus grande fluidité et facilité d'interaction ce qui augmenterait le confort
+    utilisateur.
+
+    <h2>Conclusion</h2>
+    Ce projet nous a permi d'appréhender une technologie en toute liberté (choix des technologies, choix du support, choix de l'application, etc.).
+    De plus, il n'y avait pas de contrainte forte concernant le résultat attendu ce qui amène à une plus grande mobilité et prise de décision.
+	Cela nous a aussi permi de pouvoir découvrir de nouvelles méthodes d'interactions et de nous initier à la réalité virtuelle.
+
+
+    <script type="text/javascript">
+      $('#toc').toc({
+      'selectors': 'h2,h3,h4', //elements to use as headings
+      'container': 'body', //element to find all selectors in
+      'smoothScrolling': true, //enable or disable smooth scrolling on click
+      'prefix': 'toc', //prefix for anchor tags and class names
+      'onHighlight': function(el) {}, //called when a new section is highlighted
+      'highlightOnScroll': true, //add class to heading that is currently in focus
+      'highlightOffset': 100, //offset to trigger the next headline
+      'anchorName': function(i, heading, prefix) { //custom function for anchor name
+      return prefix+i;
+      },
+      'headerText': function(i, heading, $heading) { //custom function building the header-item text
+      return $heading.text();
+      },
+      'itemClass': function(i, heading, $heading, prefix) { // custom function for item class
+      return $heading[0].tagName.toLowerCase();
+      }
+      });
+    </script>
+
+  </body>
